@@ -41,10 +41,7 @@ export default function Login() {
         {/* Login Card */}
         <div className="relative z-10 bg-white p-8 w-full max-w-md shadow-lg border border-gray-200">
           <div className="mb-6 flex flex-col items-center">
-            <div className="text-[#8B1A1A] font-serif font-bold text-4xl mb-2">ti</div>
-            <div className="text-[#8B1A1A] font-bold text-xl uppercase tracking-wide">THAPAR INSTITUTE</div>
-            <div className="text-[#8B1A1A] font-medium text-sm mb-1">OF ENGINEERING & TECHNOLOGY</div>
-            <div className="text-[#8B1A1A] italic text-xs">(Deemed to be University)</div>
+            <img src="/ti-logo.png" alt="Thapar Institute Logo" className="w-52 mb-1" />
           </div>
           
           {error && (
