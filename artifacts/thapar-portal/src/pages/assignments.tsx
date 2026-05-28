@@ -74,7 +74,7 @@ export default function Assignments() {
       <BreadcrumbBar path="View My Assignments" />
       
       <main className="max-w-5xl mx-auto p-4 bg-white mt-4 shadow-sm border border-gray-200">
-        <PageHeader title="View Assignments and Grades" subtitle="Class Grades" />
+        <PageHeader title="View Assignments and Grades" subtitle="View Assignments and Grades" />
         
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">Loading courses...</div>

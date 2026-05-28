@@ -26,20 +26,6 @@ export default function Grades() {
       <NavHeader />
       <BreadcrumbBar path="View My Assignments" />
       
-      {/* Thin colorful banner strip below breadcrumb */}
-      <div className="h-1 w-full" style={{
-        background: `repeating-linear-gradient(
-          to right,
-          #e53935, #e53935 40px,
-          #fb8c00 40px, #fb8c00 80px,
-          #fdd835 80px, #fdd835 120px,
-          #43a047 120px, #43a047 160px,
-          #1e88e5 160px, #1e88e5 200px,
-          #8e24aa 200px, #8e24aa 240px,
-          #00acc1 240px, #00acc1 280px
-        )`
-      }}></div>
-      
       <main className="max-w-5xl mx-auto p-4 bg-white mt-4 shadow-sm border border-gray-200">
         <PageHeader title="View Assignments and Grades" subtitle="Class Grades" />
         
