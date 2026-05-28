@@ -1,0 +1,245 @@
+Build a full-stack web application that is an exact visual clone of the Thapar Institute of Engineering & Technology student portal (campus.thapar.edu). Use Node.js + Express backend with SQLite database, and vanilla HTML/CSS/JS frontend.
+
+---
+
+## TECH STACK
+- Backend: Node.js + Express
+- Database: SQLite (via better-sqlite3)
+- Frontend: HTML, CSS, JavaScript (no frameworks)
+- Sessions: express-session
+
+---
+
+## COLOR SCHEME & BRANDING
+- Primary Red: #8B1A1A (Thapar maroon/red)
+- Dark header/navbar: #2d2d2d (near black)
+- Light blue nav bar at top: #b8cce4
+- Background: #f0f0f0 (light gray page bg)
+- White content areas: #ffffff
+- Table header text: orange/amber #cc6600
+- Link blue: #0066cc
+- Font: Arial, sans-serif throughout
+
+---
+
+## PAGE 1: LOGIN PAGE (index.html)
+Exact clone of the login page:
+- Full page background: split — left half white/gray, right half with a dark red overlay (#8B0000 at 60% opacity) over a campus building image
+- Centered white login card (left side):
+  - Thapar Institute logo at top (use text "ti" in red as logo placeholder)
+  - "THAPAR INSTITUTE OF ENGINEERING & TECHNOLOGY" text
+  - "(Deemed to be University)" subtitle
+  - "User ID" label + text input
+  - "Password" label + password input
+  - Dark "Sign In" button (full width, dark gray #333)
+  - "Forgot Password" link in blue below
+- Copyright footer: "Copyright © 2000, 2022, Oracle and its affiliates"
+- On successful login → redirect to student homepage
+
+---
+
+## PAGE 2: STUDENT HOMEPAGE (homepage.html)
+Top navigation bar (dark #2d2d2d):
+- Thapar "ti" logo top-left
+- "Menu ▼" button
+- Search bar center
+- Icons right: clock, heart, home, bell, menu dots, compass
+
+Below nav: colorful mosaic/pattern header banner (use CSS gradient with multiple colors to simulate the Thapar banner)
+
+Page title: "Student Homepage" with dropdown arrow
+
+Tiles grid (3-4 per row, white cards with border):
+Row 1: Student Response Survey | Change My Password | Profile | Student_Center
+Row 2: Manage Classes | I Grade Application | Raise Document Request | Backlog Course Registration
+Row 3: Makeup Test Registration | No Dues Status | Academic Progress (with pie chart) | [empty]
+Row 4: Financial | View My Grades
+
+Each tile: white background, title text, simple icon or image placeholder, hover effect with slight shadow.
+
+---
+
+## PAGE 3: VIEW ASSIGNMENTS & GRADES (assignments.html)
+Top nav same as homepage.
+
+Breadcrumb: Favorites ▼ > Main Menu ▼ > Nav Coll Navigator > View My Assignments
+
+Student name top-left: "VIKESH KUMAR" (dynamic from session)
+"Go To" dropdown + arrow button
+
+Tabs: Search | Plan | [Enroll - active/bold] | My Academics
+
+Links: "My Class Schedule | Term Information"
+
+Heading: "View Assignments and Grades"
+
+Section: "JUNE 2026 | Undergraduate | Thapar Institute of Eng & Tech"
+
+Courses table (clickable rows, blue link text):
+Columns: Course Title | Course ID | Class Nbr | Subject Catalog Nbr | Class Section
+
+Courses listed:
+- LINEAR ALGEBRA | 001340 | 454 | UCT 201 | 1R1
+- STATISTICAL MODELING | 001430 | 2257 | UCT 202 | 1R1
+- UNIVERSAL HUMAN VALUES | 002195 | 1510 | UCT 204 | 1R1
+- ENGLISH LANGUAGE COURSE | 002196 | 1882 | UCT 205 | 1R1
+- OBJECT ORIENTED PROGRAMMING | 001385 | 82 | UCT 303 | 1R1
+- PRINCIPLES OF ELECTRONICS | 000421 | 2178 | UEC00 2 | 1R1
+- FUNDAMENTALS OF ECONOMICS | 000521 | 1353 | UHU00 7 | 1R1
+
+Clicking any course → opens the Class Grades detail page for that course.
+
+---
+
+## PAGE 4: CLASS GRADES DETAIL (class_grades.html)
+Same nav + breadcrumb.
+
+Shows selected course info:
+- Course code + section: e.g. "UCT 201 - 1R1 (454)"
+- "LINEAR ALGEBRA (Lecture)"
+- Table: Days and Times | Room | Instructor | Dates
+  - Tu 07:00-08:00 | TBA | SUNITA GARHWAL | 06/01/2026 - 07/01/2026
+
+"Change Class" button (tan/beige color)
+
+GRADES section (light orange/tan background box):
+- Current Mid-Term Grade: calculated %
+- Current Overall Grade: calculated %
+
+CLASS ASSIGNMENTS collapsible section (▼):
+Table columns: Begin Date | Due Date | Assignment | Category | Grade | Out of | Other Information
+
+Collapsible sections below: Assignment Categories | Instructor Comments | Student Assignment Dates
+
+"Go to top" link at bottom.
+
+---
+
+## DATABASE SCHEMA (SQLite)
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  college_id TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  name TEXT NOT NULL,
+  role TEXT DEFAULT 'student'  -- 'student' or 'admin'
+);
+
+CREATE TABLE courses (
+  id INTEGER PRIMARY KEY,
+  course_title TEXT NOT NULL,
+  course_id TEXT NOT NULL,
+  class_nbr TEXT,
+  subject_catalog_nbr TEXT,
+  class_section TEXT DEFAULT '1R1'
+);
+
+CREATE TABLE student_courses (
+  id INTEGER PRIMARY KEY,
+  student_college_id TEXT NOT NULL,
+  course_id INTEGER NOT NULL,
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+CREATE TABLE assignments (
+  id INTEGER PRIMARY KEY,
+  course_id INTEGER NOT NULL,
+  assignment_name TEXT NOT NULL,
+  category TEXT NOT NULL,  -- MST, Quiz 1, Quiz 2, TUT1, EST, etc.
+  begin_date TEXT,
+  due_date TEXT,
+  max_marks REAL NOT NULL,
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+CREATE TABLE marks (
+  id INTEGER PRIMARY KEY,
+  student_college_id TEXT NOT NULL,
+  assignment_id INTEGER NOT NULL,
+  marks_obtained REAL,
+  FOREIGN KEY (assignment_id) REFERENCES assignments(id)
+);
+```
+
+---
+
+## ADMIN PANEL (admin.html) — accessible only to admin role users
+
+Admin login uses same login page but role = 'admin' in DB.
+
+Admin dashboard shows:
+- List of all students (name + college ID)
+- Select a student → shows their enrolled courses
+- Select a course → shows all assignments for that course
+- For each assignment: input field to enter/update marks for that student
+- Save button → updates marks in DB
+
+Admin can also:
+- Add new students
+- Add new courses
+- Enroll a student in a course
+- Add assignments to a course (name, category, max_marks, dates)
+
+---
+
+## GRADE CALCULATION LOGIC
+
+For each course, calculate:
+- Current Mid-Term Grade = (MST marks / MST max) * 100
+- Current Overall Grade = weighted sum:
+  - MST: 30%
+  - Quiz 1: 11% of total (scaled)
+  - Quiz 2: 14% of total (scaled)  
+  - TUT1: 5% of total (scaled)
+  - EST: 40%
+  (adjust weights based on actual max_marks in DB)
+- Display as percentage with 2 decimal places
+
+---
+
+## API ROUTES
+
+POST /api/login — authenticate user, set session
+GET /api/logout — clear session
+GET /api/student/courses — get logged-in student's courses
+GET /api/student/course/:courseId/grades — get assignments + marks for a course
+POST /api/admin/marks — admin updates marks { student_college_id, assignment_id, marks }
+POST /api/admin/student — admin adds student
+POST /api/admin/course — admin adds course
+POST /api/admin/enroll — admin enrolls student in course
+POST /api/admin/assignment — admin adds assignment to course
+GET /api/admin/students — list all students
+GET /api/admin/student/:id/courses — get student's courses
+
+---
+
+## SEED DATA
+Pre-populate DB with:
+- 1 admin user: college_id = "ADMIN001", password = "admin123", role = "admin"
+- 1 student: college_id = "102203001", password = "student123", name = "VIKESH KUMAR", role = "student"
+- All 7 courses listed above
+- Enroll VIKESH KUMAR in all 7 courses
+- Add assignments for LINEAR ALGEBRA:
+  - MST: begin 12/03/2026, due 20/04/2026, max 30
+  - Quiz 1: begin 01/04/2026, due 29/05/2026, max 11
+  - Quiz 2: begin 13/05/2026, due 31/05/2026, max 14
+  - TUT1: begin 25/05/2026, due 31/05/2026, max 5
+  - EST: begin 27/05/2026, due 05/06/2026, max 40
+- Add marks for VIKESH KUMAR in LINEAR ALGEBRA:
+  - MST: 9.50, Quiz1: 7.00, Quiz2: 7.00, EST: 8.00 (TUT1: no marks yet)
+
+---
+
+## IMPORTANT NOTES
+- All pages must have the exact same top navigation bar with dark background
+- The colorful mosaic banner below the nav (simulate with CSS multi-color gradient)
+- Tables must match exact column widths and colors from screenshots
+- Assignment/course name links must be blue and underlined
+- When TUT1 has no marks, leave Grade cell empty
+- "~" symbol after grade percentages (approximate indicator)
+- Mobile responsive is NOT required, desktop only
+- Session-based auth: redirect to login if not authenticated
+- After login, redirect to homepage
+- Keep all styling in a single styles.css file
+- Keep all client JS in a single app.js file

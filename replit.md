@@ -1,36 +1,57 @@
-# [Project name]
+# Thapar Student Portal
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An exact visual clone of the Thapar Institute of Engineering & Technology student portal (campus.thapar.edu). Students can log in, view enrolled courses, check assignment grades, and admins can manage students, courses, enrollments, and marks.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/thapar-portal run dev` — run the frontend (port 18672)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- API: Express 5 + express-session
+- DB: SQLite via better-sqlite3 (thapar.db at workspace root)
+- Frontend: React + Vite + Tailwind CSS + Wouter routing
+- Validation: Zod (zod/v4), drizzle-zod
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — OpenAPI spec (source of truth)
+- `lib/api-client-react/src/generated/` — generated React Query hooks
+- `lib/api-zod/src/generated/` — generated Zod schemas used by server
+- `artifacts/api-server/src/` — Express server (app.ts, routes/)
+- `artifacts/api-server/src/db/sqlite.ts` — SQLite setup, schema init, seed data
+- `artifacts/thapar-portal/src/` — React frontend
+- `artifacts/thapar-portal/src/pages/` — login, homepage, assignments, grades, admin
+- `artifacts/thapar-portal/src/contexts/AuthContext.tsx` — auth state
+- `artifacts/thapar-portal/public/campus.jpg` — campus building image used in login
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- SQLite (better-sqlite3) used instead of PostgreSQL — simpler for a single-server portal clone
+- Session-based auth via express-session with SESSION_SECRET env var
+- Campus image served as a static file from the public folder, referenced as /campus.jpg
+- All CSS variables set to exact Thapar colors (maroon #8B1A1A, dark nav #2d2d2d, etc.)
+- Font is Arial throughout to match original portal
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Login page**: Exact clone with split campus image background and white login card
+- **Student Homepage**: Dark nav, colorful mosaic banner, 13-tile grid
+- **View Assignments & Grades**: Course list table with blue link rows, breadcrumb nav
+- **Class Grades Detail**: Assignment table with mark calculation (midterm + overall %)
+- **Admin Panel**: Manage students, courses, enrollments, assignments, marks
+
+## Default credentials
+
+- Student: `102203001` / `student123` (VIKESH KUMAR)
+- Admin: `ADMIN001` / `admin123`
 
 ## User preferences
 
@@ -38,7 +59,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run `pnpm install` first if better-sqlite3 native build is missing
+- `thapar.db` is created automatically on first API server start with seeded data
+- After OpenAPI spec changes, always run codegen before editing routes or frontend
+- Cookies require `credentials: 'include'` — already set in custom-fetch.ts
 
 ## Pointers
 

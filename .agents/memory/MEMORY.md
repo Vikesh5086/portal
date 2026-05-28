@@ -1,0 +1,2 @@
+- [Thapar Portal - SQLite over PostgreSQL](thapar-sqlite.md) — Uses better-sqlite3 not PostgreSQL; must add better-sqlite3 to onlyBuiltDependencies in pnpm-workspace.yaml
+- [Deep import fix](deep-import-fix.md) — Never import from @workspace/api-client-react/src/... deep paths; use only the barrel export @workspace/api-client-react

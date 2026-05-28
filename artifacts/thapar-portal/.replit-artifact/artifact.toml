@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Thapar Student Portal"
+version = "1.0.0"
+id = "artifacts/thapar-portal"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18672
+
+[services.development]
+run = "pnpm --filter @workspace/thapar-portal run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/thapar-portal", "run", "build" ]
+publicDir = "artifacts/thapar-portal/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18672"
+BASE_PATH = "/"
