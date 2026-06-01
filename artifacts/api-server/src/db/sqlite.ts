@@ -95,27 +95,26 @@ function seedData(db: Database.Database) {
   const insertAssignment = db.prepare(`INSERT INTO assignments (course_id, assignment_name, category, begin_date, due_date, max_marks) VALUES (?, ?, ?, ?, ?, ?)`);
   const insertMark = db.prepare(`INSERT INTO marks (student_college_id, assignment_id, marks_obtained) VALUES (?, ?, ?)`);
 
-  const assignments = [
-    ["mst", "MST", "12/03/2026", "20/04/2026", 30],
-    ["Quiz1", "Quiz 1", "01/04/2026", "29/05/2026", 11],
-    ["Quiz2", "Quiz 2", "13/05/2026", "31/05/2026", 14],
-    ["Tute", "TUT1", "25/05/2026", "31/05/2026", 5],
-    ["EST", "EST", "27/05/2026", "05/06/2026", 40],
+  // Dates stored as MM/DD/YYYY matching display format
+  const assignments: [string, string, string, string, number][] = [
+    ["mst",   "MST",   "03/12/2026", "04/20/2026", 30],
+    ["Quiz1", "Quiz 1","04/01/2026", "05/29/2026", 11],
+    ["Quiz2", "Quiz 2","05/13/2026", "05/31/2026", 14],
+    ["Tute",  "TUT1",  "05/25/2026", "05/31/2026",  5],
+    ["est",   "EST",   "05/27/2026", "06/05/2026", 40],
   ];
 
+  // NULL marks = blank; 0 = shows as 0.00; Tute is NULL (blank)
   const marksData: Record<string, number | null> = {
-    "mst": 9.50,
+    "mst":   9.50,
     "Quiz1": 7.00,
     "Quiz2": 7.00,
-    "Tute": null,
-    "EST": 8.00,
+    "Tute":  null,
+    "est":   8.00,
   };
 
   for (const [name, category, beginDate, dueDate, maxMarks] of assignments) {
     const result = insertAssignment.run(linearAlgebraId, name, category, beginDate, dueDate, maxMarks);
-    const marks = marksData[name as string];
-    if (marks !== undefined) {
-      insertMark.run("102203001", result.lastInsertRowid, marks);
-    }
+    insertMark.run("102203001", result.lastInsertRowid, marksData[name] ?? null);
   }
 }

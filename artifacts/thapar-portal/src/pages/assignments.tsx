@@ -1,56 +1,73 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation } from "wouter";
-import { NavHeader } from "./homepage";
+import { NavHeader, MosaicBanner } from "./homepage";
 import { useGetStudentCourses } from "@workspace/api-client-react";
 import { useEffect } from "react";
-import { ChevronUp } from "lucide-react";
+
+const S: React.CSSProperties = { fontFamily: "Arial, sans-serif", fontSize: 13 };
 
 export function BreadcrumbBar({ path }: { path: string }) {
   return (
-    <div className="bg-[#b8cce4] text-xs px-4 py-1.5 flex items-center text-gray-800">
-      <span className="cursor-pointer hover:underline">Favorites ▼</span>
-      <span className="mx-2">&gt;</span>
-      <span className="cursor-pointer hover:underline">Main Menu ▼</span>
-      <span className="mx-2">&gt;</span>
-      <span className="cursor-pointer hover:underline">Nav Coll Navigator</span>
-      <span className="mx-2">&gt;</span>
+    <div style={{ background: "#b8cce4", height: 28, display: "flex", alignItems: "center", padding: "0 15px", fontSize: 12, color: "#333", fontFamily: "Arial, sans-serif" }}>
+      <span style={{ cursor: "pointer" }}>Favorites ▼</span>
+      <span style={{ margin: "0 6px" }}>&nbsp;&gt;&nbsp;</span>
+      <span style={{ cursor: "pointer" }}>Main Menu ▼</span>
+      <span style={{ margin: "0 6px" }}>&nbsp;&gt;&nbsp;</span>
+      <span style={{ cursor: "pointer" }}>Nav Coll Navigator</span>
+      <span style={{ margin: "0 6px" }}>&nbsp;&gt;&nbsp;</span>
       <span>{path}</span>
     </div>
   );
 }
 
-export function PageHeader({ title, subtitle }: { title: string, subtitle: string }) {
+export function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
   const { user } = useAuth();
-  
   return (
-    <div className="mb-4">
-      <div className="flex justify-between items-start mb-4">
-        <div className="text-sm font-bold uppercase">{user?.name}</div>
-        <div className="flex items-center gap-2 text-sm">
+    <div style={{ marginBottom: 16 }}>
+      {/* Student name + Go To */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: "bold", ...S }}>{user?.name}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
           <span>Go To</span>
-          <select className="border border-gray-300 px-2 py-0.5">
+          <select style={{ border: "1px solid #aaa", padding: "2px 4px", fontSize: 12, width: 220 }}>
             <option>View Assignments and Grades</option>
           </select>
-          <button className="bg-[#8B1A1A] text-white px-2 py-0.5">&gt;&gt;</button>
+          <button style={{ background: "#cc0000", color: "#fff", border: "none", padding: "3px 8px", cursor: "pointer", fontSize: 12 }}>&gt;&gt;</button>
         </div>
       </div>
-      
-      <div className="flex gap-1 mb-4 border-b border-gray-300">
-        <button className="px-3 py-1.5 text-sm font-bold hover:bg-gray-100">Search</button>
-        <button className="px-3 py-1.5 text-sm font-bold hover:bg-gray-100">Plan</button>
-        <button className="px-3 py-1.5 text-sm font-bold border-t-2 border-l-2 border-r-2 border-gray-300 border-b-white -mb-[1px] bg-white">Enroll</button>
-        <button className="px-3 py-1.5 text-sm font-bold hover:bg-gray-100">My Academics</button>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 2, marginBottom: 12, borderBottom: "1px solid #ccc" }}>
+        {["Search", "Plan", "Enroll", "My Academics"].map(tab => (
+          <button key={tab} style={{
+            padding: "4px 12px",
+            fontSize: 13,
+            fontWeight: tab === "Enroll" ? "bold" : "normal",
+            background: tab === "Enroll" ? "#fff" : "transparent",
+            border: tab === "Enroll" ? "1px solid #ccc" : "1px solid transparent",
+            borderBottom: tab === "Enroll" ? "1px solid #fff" : "1px solid transparent",
+            marginBottom: tab === "Enroll" ? -1 : 0,
+            cursor: "pointer",
+          }}>{tab}</button>
+        ))}
       </div>
-      
-      <div className="flex gap-4 mb-4 text-sm font-bold text-[#0066cc]">
-        <span className="cursor-pointer hover:underline">My Class Schedule</span>
-        <span className="cursor-pointer hover:underline">Term Information</span>
+
+      {/* Nav links */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 12, fontSize: 13 }}>
+        <span style={{ color: "#0066cc", cursor: "pointer", textDecoration: "underline" }}>My Class Schedule</span>
+        <span style={{ color: "#333" }}>&nbsp;|&nbsp;</span>
+        <span style={{ fontWeight: "bold", color: "#333" }}>Term Information</span>
       </div>
-      
-      <h1 className="text-lg font-bold mb-2">{title}</h1>
-      <h2 className="text-xl font-bold mb-2">{subtitle}</h2>
-      
-      <div className="bg-blue-50 border-y border-blue-200 py-1 px-2 text-sm font-bold">
+
+      {/* Title */}
+      <h1 style={{ fontSize: 17, fontWeight: "bold", margin: "0 0 6px 0", color: "#000", fontFamily: "Arial, sans-serif" }}>{title}</h1>
+
+      {subtitle !== title && (
+        <div style={{ fontSize: 13, marginBottom: 8, color: "#333", fontFamily: "Arial, sans-serif" }}>{subtitle}</div>
+      )}
+
+      {/* Term bar */}
+      <div style={{ borderTop: "1px solid #ccc", borderBottom: "1px solid #ccc", padding: "3px 0", fontSize: 13, marginBottom: 10, fontFamily: "Arial, sans-serif" }}>
         JUNE 2026 | Undergraduate | Thapar Institute of Eng & Tech
       </div>
     </div>
@@ -69,58 +86,56 @@ export default function Assignments() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#f0f0f0] font-sans">
-      <NavHeader />
+    <div style={{ minHeight: "100vh", background: "#f0f0f0", fontFamily: "Arial, sans-serif" }}>
+      <style>{`.group:hover > div { display: block !important; }`}</style>
       <BreadcrumbBar path="View My Assignments" />
-      
-      <main className="max-w-5xl mx-auto p-4 bg-white mt-4 shadow-sm border border-gray-200">
+      <NavHeader variant="student" />
+      <MosaicBanner />
+
+      <main style={{ maxWidth: 900, margin: "16px auto", background: "#fff", padding: 20, border: "1px solid #ccc" }}>
         <PageHeader title="View Assignments and Grades" subtitle="View Assignments and Grades" />
-        
+
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500">Loading courses...</div>
+          <div style={{ padding: 24, textAlign: "center", color: "#666", ...S }}>Loading courses...</div>
         ) : (
-          <div className="overflow-x-auto mb-8">
-            <table className="w-full text-sm border-collapse border border-gray-300">
+          <div style={{ overflowX: "auto", marginBottom: 20 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13, fontFamily: "Arial, sans-serif" }}>
               <thead>
-                <tr className="bg-gray-100 border-b border-gray-300">
-                  <th className="text-left p-2 border-r border-gray-300 text-[#cc6600] font-bold">Course Title</th>
-                  <th className="text-left p-2 border-r border-gray-300 text-[#cc6600] font-bold">Course ID</th>
-                  <th className="text-left p-2 border-r border-gray-300 text-[#cc6600] font-bold">Class Nbr</th>
-                  <th className="text-left p-2 border-r border-gray-300 text-[#cc6600] font-bold">Subject Catalog Nbr</th>
-                  <th className="text-left p-2 text-[#cc6600] font-bold">Class Section</th>
+                <tr style={{ background: "#fff" }}>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Course Title</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Course ID</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Class Nbr</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Subject Catalog Nbr</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderBottom: "1px solid #cccccc" }}>Class Section</th>
                 </tr>
               </thead>
               <tbody>
-                {courses?.map((course) => (
-                  <tr key={course.id} className="border-b border-gray-300 hover:bg-gray-50">
-                    <td className="p-2 border-r border-gray-300">
-                      <Link href={`/grades/${course.id}`} className="text-[#0066cc] hover:underline font-bold">
+                {courses?.map((course, idx) => (
+                  <tr key={course.id} style={{ background: idx % 2 === 0 ? "#fff" : "#f9f9f9", height: 28 }}>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>
+                      <Link href={`/grades/${course.id}`} style={{ color: "#0066cc", textDecoration: "none", fontWeight: "normal" }}>
                         {course.course_title}
                       </Link>
                     </td>
-                    <td className="p-2 border-r border-gray-300">{course.course_id}</td>
-                    <td className="p-2 border-r border-gray-300">{course.class_nbr || "\u00A0"}</td>
-                    <td className="p-2 border-r border-gray-300">{course.subject_catalog_nbr || "\u00A0"}</td>
-                    <td className="p-2">{course.class_section}</td>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.course_id}</td>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.class_nbr || ""}</td>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.subject_catalog_nbr || ""}</td>
+                    <td style={{ padding: "3px 8px", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.class_section}</td>
                   </tr>
                 ))}
                 {(!courses || courses.length === 0) && (
-                  <tr>
-                    <td colSpan={5} className="p-4 text-center text-gray-500">No courses found</td>
-                  </tr>
+                  <tr><td colSpan={5} style={{ padding: 16, textAlign: "center", color: "#666" }}>No courses found</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         )}
-        
-        <div className="flex justify-end pt-4 border-t border-gray-200">
-          <button 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-1 text-[#0066cc] text-sm hover:underline"
-          >
-            <ChevronUp className="w-4 h-4" /> Go to top
-          </button>
+
+        <div style={{ marginTop: 16, paddingTop: 8 }}>
+          <a href="#top" style={{ color: "#0066cc", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
+            <img src="/icon-gototop.png" alt="" style={{ width: 14, height: 14 }} onError={e => (e.currentTarget.style.display = "none")} />
+            &#9650; Go to top
+          </a>
         </div>
       </main>
     </div>

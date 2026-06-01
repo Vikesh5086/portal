@@ -1,251 +1,555 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import { NavHeader } from "./homepage";
-import { 
-  useGetAdminStudents, 
-  useGetAdminStudentCourses, 
-  useCreateAdminStudent, 
-  useCreateAdminCourse, 
-  useEnrollStudent, 
-  useCreateAdminAssignment, 
-  useUpdateAdminMarks,
-  getGetAdminStudentsQueryKey,
-  getGetAdminStudentCoursesQueryKey,
-} from "@workspace/api-client-react";
-import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, useCallback } from "react";
+
+type Student = { id: number; college_id: string; name: string; role: string };
+type Course = { id: number; course_title: string; course_id: string; class_nbr: string; subject_catalog_nbr: string; class_section: string };
+type Assignment = { id: number; course_id: number; assignment_name: string; category: string; begin_date: string; due_date: string; max_marks: number };
+type MarksGrid = { assignments: Assignment[]; students: Student[]; marks: { student_college_id: string; assignment_id: number; marks_obtained: number | null }[] };
+
+const API = (path: string) => `/api${path}`;
+
+async function apiFetch(path: string, opts?: RequestInit) {
+  const res = await fetch(API(path), { credentials: "include", headers: { "Content-Type": "application/json" }, ...opts });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+const tabStyle = (active: boolean): React.CSSProperties => ({
+  padding: "6px 18px", fontSize: 13, fontWeight: active ? "bold" : "normal",
+  background: active ? "#fff" : "#f0f0f0", border: "1px solid #ccc",
+  borderBottom: active ? "1px solid #fff" : "1px solid #ccc",
+  marginBottom: active ? -1 : 0, cursor: "pointer", marginRight: 2,
+});
+const btn = (color = "#0066cc"): React.CSSProperties => ({
+  background: color, color: "#fff", border: "none", padding: "4px 12px",
+  cursor: "pointer", fontSize: 13, fontFamily: "Arial, sans-serif",
+});
+const inp: React.CSSProperties = { border: "1px solid #aaa", padding: "4px 8px", fontSize: 13, fontFamily: "Arial, sans-serif", width: "100%", boxSizing: "border-box" };
+const tbl: React.CSSProperties = { width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: "Arial, sans-serif" };
+const th: React.CSSProperties = { background: "#e8e8e8", padding: "6px 10px", textAlign: "left", border: "1px solid #ccc", color: "#333" };
+const td: React.CSSProperties = { padding: "5px 10px", border: "1px solid #ddd", verticalAlign: "middle" };
 
 export default function Admin() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  
-  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
-  
-  // Forms state
-  const [newStudent, setNewStudent] = useState({ college_id: "", name: "", password: "" });
-  const [newCourse, setNewCourse] = useState({ course_id: "", course_title: "", subject_catalog_nbr: "", class_nbr: "", class_section: "1" });
-  const [enrollData, setEnrollData] = useState({ student_college_id: "", course_id: "" });
-  const [newAssignment, setNewAssignment] = useState({ course_id: "", assignment_name: "", category: "Mid-Term", max_marks: "100" });
-  const [markData, setMarkData] = useState({ student_college_id: "", assignment_id: "", marks: "" });
-
-  const { data: students, isLoading: isLoadingStudents } = useGetAdminStudents();
-  const { data: studentCourses, isLoading: isLoadingCourses } = useGetAdminStudentCourses(
-    selectedStudentId,
-    { query: { enabled: !!selectedStudentId, queryKey: getGetAdminStudentCoursesQueryKey(selectedStudentId) } }
-  );
-
-  const createStudent = useCreateAdminStudent();
-  const createCourse = useCreateAdminCourse();
-  const enrollStudent = useEnrollStudent();
-  const createAssignment = useCreateAdminAssignment();
-  const updateMarks = useUpdateAdminMarks();
+  const [activeTab, setActiveTab] = useState(0);
+  const tabs = ["Manage Students", "Manage Subjects", "Manage Assignments", "Enter Marks", "Enroll Students"];
 
   useEffect(() => {
-    if (!user) {
-      setLocation("/");
-    } else if (user.role !== "admin") {
-      setLocation("/homepage");
-    }
+    if (!user) { setLocation("/"); return; }
+    if (user.role !== "admin" && user.role !== "teacher") setLocation("/homepage");
   }, [user, setLocation]);
 
-  if (!user || user.role !== "admin") return null;
+  if (!user || (user.role !== "admin" && user.role !== "teacher")) return null;
 
-  const handleCreateStudent = async (e: React.FormEvent) => {
+  return (
+    <div style={{ minHeight: "100vh", background: "#f0f0f0", fontFamily: "Arial, sans-serif" }}>
+      <style>{`.group:hover > div { display: block !important; }`}</style>
+      <NavHeader variant="home" />
+
+      <main style={{ maxWidth: 1100, margin: "16px auto", background: "#fff", border: "1px solid #ccc", minHeight: 500 }}>
+        {/* Admin header */}
+        <div style={{ background: "#2d2d2d", color: "#fff", padding: "10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: 15, fontWeight: "bold" }}>Teacher / Admin Panel</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 13 }}>
+            <span>{user.name}</span>
+            <button onClick={() => { logout(); setLocation("/"); }} style={{ ...btn("#555"), padding: "3px 10px" }}>Sign Out</button>
+          </div>
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display: "flex", padding: "12px 20px 0 20px", borderBottom: "1px solid #ccc", background: "#f8f8f8" }}>
+          {tabs.map((t, i) => (
+            <button key={i} onClick={() => setActiveTab(i)} style={tabStyle(activeTab === i)}>{t}</button>
+          ))}
+        </div>
+
+        <div style={{ padding: 20 }}>
+          {activeTab === 0 && <StudentsTab />}
+          {activeTab === 1 && <SubjectsTab />}
+          {activeTab === 2 && <AssignmentsTab />}
+          {activeTab === 3 && <MarksTab />}
+          {activeTab === 4 && <EnrollTab />}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/* ─── TAB 1: STUDENTS ──────────────────────────────────────────────── */
+function StudentsTab() {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [form, setForm] = useState({ college_id: "", name: "", password: "" });
+  const [msg, setMsg] = useState("");
+
+  const load = useCallback(() => apiFetch("/admin/students").then(setStudents), []);
+  useEffect(() => { load(); }, [load]);
+
+  const add = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createStudent.mutateAsync({ data: newStudent });
-    queryClient.invalidateQueries({ queryKey: getGetAdminStudentsQueryKey() });
-    setNewStudent({ college_id: "", name: "", password: "" });
+    try {
+      await apiFetch("/admin/student", { method: "POST", body: JSON.stringify(form) });
+      setForm({ college_id: "", name: "", password: "" });
+      setMsg("Student added!"); load();
+    } catch { setMsg("Error adding student"); }
   };
 
-  const handleCreateCourse = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createCourse.mutateAsync({ data: newCourse });
-    setNewCourse({ course_id: "", course_title: "", subject_catalog_nbr: "", class_nbr: "", class_section: "1" });
-  };
-
-  const handleEnroll = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await enrollStudent.mutateAsync({ 
-      data: { 
-        student_college_id: enrollData.student_college_id, 
-        course_id: parseInt(enrollData.course_id, 10) 
-      } 
-    });
-    if (enrollData.student_college_id === selectedStudentId) {
-      queryClient.invalidateQueries({ queryKey: getGetAdminStudentCoursesQueryKey(selectedStudentId) });
-    }
-    setEnrollData({ student_college_id: "", course_id: "" });
-  };
-
-  const handleCreateAssignment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createAssignment.mutateAsync({ 
-      data: { 
-        ...newAssignment, 
-        course_id: parseInt(newAssignment.course_id, 10),
-        max_marks: parseInt(newAssignment.max_marks, 10)
-      } 
-    });
-    setNewAssignment({ course_id: "", assignment_name: "", category: "Mid-Term", max_marks: "100" });
-  };
-
-  const handleUpdateMarks = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await updateMarks.mutateAsync({ 
-      data: { 
-        student_college_id: markData.student_college_id, 
-        assignment_id: parseInt(markData.assignment_id, 10),
-        marks: parseFloat(markData.marks)
-      } 
-    });
-    // Invalidate grades for this student and course
-    // Would need to know course ID to fully invalidate, but this triggers refresh next time they check
-    setMarkData({ student_college_id: "", assignment_id: "", marks: "" });
-    alert("Marks updated");
+  const del = async (id: string) => {
+    if (!confirm(`Delete student ${id}?`)) return;
+    await apiFetch(`/admin/students/${id}`, { method: "DELETE" });
+    setMsg("Student deleted"); load();
   };
 
   return (
-    <div className="min-h-screen bg-[#f0f0f0] font-sans">
-      <NavHeader />
-      
-      <main className="max-w-6xl mx-auto p-4 py-8">
-        <h1 className="text-2xl font-bold mb-6 text-[#8B1A1A]">Admin Dashboard</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column - View Data */}
-          <div className="space-y-6">
-            <div className="bg-white p-4 shadow-sm border border-gray-200">
-              <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Students</h2>
-              
-              {isLoadingStudents ? (
-                <div>Loading...</div>
-              ) : (
-                <div className="overflow-y-auto max-h-60 border border-gray-300">
-                  <table className="w-full text-sm border-collapse">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="p-2 border-b border-gray-300 text-left">College ID</th>
-                        <th className="p-2 border-b border-gray-300 text-left">Name</th>
-                        <th className="p-2 border-b border-gray-300 text-left">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {students?.map((student) => (
-                        <tr key={student.id} className={selectedStudentId === student.college_id ? "bg-blue-50" : ""}>
-                          <td className="p-2 border-b border-gray-300">{student.college_id}</td>
-                          <td className="p-2 border-b border-gray-300">{student.name}</td>
-                          <td className="p-2 border-b border-gray-300">
-                            <button 
-                              onClick={() => setSelectedStudentId(student.college_id)}
-                              className="text-xs bg-[#0066cc] text-white px-2 py-1 rounded"
-                            >
-                              View Courses
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-            
-            {selectedStudentId && (
-              <div className="bg-white p-4 shadow-sm border border-gray-200">
-                <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Courses for {selectedStudentId}</h2>
-                
-                {isLoadingCourses ? (
-                  <div>Loading...</div>
-                ) : studentCourses?.length ? (
-                  <ul className="list-disc pl-5 text-sm space-y-1">
-                    {studentCourses.map(c => (
-                      <li key={c.id}>
-                        {c.course_id} - {c.course_title} (ID: {c.id})
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-sm text-gray-500">No courses enrolled.</div>
-                )}
-              </div>
-            )}
+    <div>
+      <h2 style={{ fontSize: 16, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: 8 }}>Manage Students</h2>
+      {msg && <div style={{ background: "#e6ffe6", border: "1px solid #aaa", padding: "6px 12px", marginBottom: 12, fontSize: 13 }}>{msg}</div>}
+
+      <table style={tbl}>
+        <thead><tr><th style={th}>Roll Number</th><th style={th}>Name</th><th style={th}>Action</th></tr></thead>
+        <tbody>
+          {students.map(s => (
+            <tr key={s.id}>
+              <td style={td}>{s.college_id}</td>
+              <td style={td}>{s.name}</td>
+              <td style={td}><button onClick={() => del(s.college_id)} style={{ ...btn("#cc0000"), padding: "2px 10px" }}>Delete</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div style={{ marginTop: 20, border: "1px solid #ddd", padding: 16, background: "#fafafa" }}>
+        <div style={{ fontWeight: "bold", fontSize: 14, marginBottom: 12 }}>Add Student</div>
+        <form onSubmit={add} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
+          <div>
+            <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Roll Number</label>
+            <input style={inp} value={form.college_id} onChange={e => setForm({ ...form, college_id: e.target.value })} required placeholder="e.g. 102203002" />
           </div>
-          
-          {/* Right Column - Forms */}
-          <div className="space-y-6">
-            {/* Create Student */}
-            <div className="bg-white p-4 shadow-sm border border-gray-200">
-              <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Add Student</h2>
-              <form onSubmit={handleCreateStudent} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <input placeholder="College ID" className="border border-gray-300 px-2 py-1" value={newStudent.college_id} onChange={e => setNewStudent({...newStudent, college_id: e.target.value})} required />
-                  <input placeholder="Password" type="password" className="border border-gray-300 px-2 py-1" value={newStudent.password} onChange={e => setNewStudent({...newStudent, password: e.target.value})} required />
-                </div>
-                <input placeholder="Full Name" className="border border-gray-300 px-2 py-1 w-full text-sm" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} required />
-                <button type="submit" disabled={createStudent.isPending} className="bg-[#8B1A1A] text-white text-sm px-4 py-1.5 font-bold">Add Student</button>
-              </form>
+          <div>
+            <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Full Name</label>
+            <input style={inp} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="e.g. RAHUL SHARMA" />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Password</label>
+            <input style={inp} type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required placeholder="Password" />
+          </div>
+          <button type="submit" style={{ ...btn("#1a7a1a"), padding: "6px 16px", whiteSpace: "nowrap" }}>Add Student</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ─── TAB 2: SUBJECTS ──────────────────────────────────────────────── */
+function SubjectsTab() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [form, setForm] = useState({ course_title: "", course_id: "", class_nbr: "", subject_catalog_nbr: "", class_section: "1R1" });
+  const [msg, setMsg] = useState("");
+
+  const load = useCallback(() => apiFetch("/admin/courses").then(setCourses), []);
+  useEffect(() => { load(); }, [load]);
+
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch("/admin/course", { method: "POST", body: JSON.stringify(form) });
+      setForm({ course_title: "", course_id: "", class_nbr: "", subject_catalog_nbr: "", class_section: "1R1" });
+      setMsg("Subject added!"); load();
+    } catch { setMsg("Error adding subject"); }
+  };
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this subject and all its assignments/marks?")) return;
+    await apiFetch(`/admin/courses/${id}`, { method: "DELETE" });
+    setMsg("Subject deleted"); load();
+  };
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 16, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: 8 }}>Manage Subjects</h2>
+      {msg && <div style={{ background: "#e6ffe6", border: "1px solid #aaa", padding: "6px 12px", marginBottom: 12, fontSize: 13 }}>{msg}</div>}
+
+      <table style={tbl}>
+        <thead>
+          <tr>
+            <th style={th}>Subject Name</th>
+            <th style={th}>Course ID</th>
+            <th style={th}>Class Nbr</th>
+            <th style={th}>Subject Catalog Nbr</th>
+            <th style={th}>Class Section</th>
+            <th style={th}>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {courses.map(c => (
+            <tr key={c.id}>
+              <td style={td}>{c.course_title}</td>
+              <td style={td}>{c.course_id}</td>
+              <td style={td}>{c.class_nbr}</td>
+              <td style={td}>{c.subject_catalog_nbr}</td>
+              <td style={td}>{c.class_section}</td>
+              <td style={td}><button onClick={() => del(c.id)} style={{ ...btn("#cc0000"), padding: "2px 10px" }}>Delete</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div style={{ marginTop: 20, border: "1px solid #ddd", padding: 16, background: "#fafafa" }}>
+        <div style={{ fontWeight: "bold", fontSize: 14, marginBottom: 12 }}>Add Subject</div>
+        <form onSubmit={add}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+            <div>
+              <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Subject Name</label>
+              <input style={inp} value={form.course_title} onChange={e => setForm({ ...form, course_title: e.target.value })} required placeholder="e.g. LINEAR ALGEBRA" />
             </div>
-            
-            {/* Create Course */}
-            <div className="bg-white p-4 shadow-sm border border-gray-200">
-              <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Add Course</h2>
-              <form onSubmit={handleCreateCourse} className="space-y-3">
-                <input placeholder="Course ID (e.g. UCT 201)" className="border border-gray-300 px-2 py-1 w-full text-sm" value={newCourse.course_id} onChange={e => setNewCourse({...newCourse, course_id: e.target.value})} required />
-                <input placeholder="Course Title" className="border border-gray-300 px-2 py-1 w-full text-sm" value={newCourse.course_title} onChange={e => setNewCourse({...newCourse, course_title: e.target.value})} required />
-                <div className="grid grid-cols-3 gap-2 text-sm">
-                  <input placeholder="Catalog Nbr" className="border border-gray-300 px-2 py-1" value={newCourse.subject_catalog_nbr} onChange={e => setNewCourse({...newCourse, subject_catalog_nbr: e.target.value})} />
-                  <input placeholder="Class Nbr" className="border border-gray-300 px-2 py-1" value={newCourse.class_nbr} onChange={e => setNewCourse({...newCourse, class_nbr: e.target.value})} />
-                  <input placeholder="Section" className="border border-gray-300 px-2 py-1" value={newCourse.class_section} onChange={e => setNewCourse({...newCourse, class_section: e.target.value})} />
-                </div>
-                <button type="submit" disabled={createCourse.isPending} className="bg-[#8B1A1A] text-white text-sm px-4 py-1.5 font-bold">Add Course</button>
-              </form>
+            <div>
+              <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Course ID</label>
+              <input style={inp} value={form.course_id} onChange={e => setForm({ ...form, course_id: e.target.value })} required placeholder="e.g. 001340" />
             </div>
-            
-            {/* Enroll Student */}
-            <div className="bg-white p-4 shadow-sm border border-gray-200">
-              <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Enroll Student</h2>
-              <form onSubmit={handleEnroll} className="flex gap-2 text-sm">
-                <input placeholder="College ID" className="border border-gray-300 px-2 py-1 flex-1" value={enrollData.student_college_id} onChange={e => setEnrollData({...enrollData, student_college_id: e.target.value})} required />
-                <input placeholder="Course Db ID" type="number" className="border border-gray-300 px-2 py-1 w-32" value={enrollData.course_id} onChange={e => setEnrollData({...enrollData, course_id: e.target.value})} required />
-                <button type="submit" disabled={enrollStudent.isPending} className="bg-[#0066cc] text-white px-4 py-1 font-bold">Enroll</button>
-              </form>
+            <div>
+              <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Class Nbr</label>
+              <input style={inp} value={form.class_nbr} onChange={e => setForm({ ...form, class_nbr: e.target.value })} placeholder="e.g. 454" />
             </div>
-            
-            {/* Create Assignment */}
-            <div className="bg-white p-4 shadow-sm border border-gray-200">
-              <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Add Assignment</h2>
-              <form onSubmit={handleCreateAssignment} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <input placeholder="Course Db ID" type="number" className="border border-gray-300 px-2 py-1" value={newAssignment.course_id} onChange={e => setNewAssignment({...newAssignment, course_id: e.target.value})} required />
-                  <input placeholder="Assignment Name" className="border border-gray-300 px-2 py-1" value={newAssignment.assignment_name} onChange={e => setNewAssignment({...newAssignment, assignment_name: e.target.value})} required />
+            <div>
+              <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Subject Catalog Nbr</label>
+              <input style={inp} value={form.subject_catalog_nbr} onChange={e => setForm({ ...form, subject_catalog_nbr: e.target.value })} placeholder="e.g. UCT 201" />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Class Section</label>
+              <input style={inp} value={form.class_section} onChange={e => setForm({ ...form, class_section: e.target.value })} placeholder="e.g. 1R1" />
+            </div>
+          </div>
+          <button type="submit" style={{ ...btn("#1a7a1a"), padding: "6px 16px" }}>Add Subject</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ─── TAB 3: ASSIGNMENTS ───────────────────────────────────────────── */
+function AssignmentsTab() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [form, setForm] = useState({ assignment_name: "", category: "MST", max_marks: "30", begin_date: "", due_date: "" });
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => { apiFetch("/admin/courses").then(setCourses); }, []);
+
+  useEffect(() => {
+    if (selectedCourseId) {
+      apiFetch(`/admin/courses/${selectedCourseId}/assignments`).then(setAssignments);
+    } else {
+      setAssignments([]);
+    }
+  }, [selectedCourseId]);
+
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch("/admin/assignment", {
+        method: "POST",
+        body: JSON.stringify({ ...form, course_id: parseInt(selectedCourseId), max_marks: parseFloat(form.max_marks) }),
+      });
+      setForm({ assignment_name: "", category: "MST", max_marks: "30", begin_date: "", due_date: "" });
+      setMsg("Assignment added!");
+      apiFetch(`/admin/courses/${selectedCourseId}/assignments`).then(setAssignments);
+    } catch { setMsg("Error adding assignment"); }
+  };
+
+  const del = async (id: number) => {
+    if (!confirm("Delete this assignment and all its marks?")) return;
+    await apiFetch(`/admin/assignments/${id}`, { method: "DELETE" });
+    setMsg("Assignment deleted");
+    apiFetch(`/admin/courses/${selectedCourseId}/assignments`).then(setAssignments);
+  };
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 16, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: 8 }}>Manage Assignments</h2>
+      {msg && <div style={{ background: "#e6ffe6", border: "1px solid #aaa", padding: "6px 12px", marginBottom: 12, fontSize: 13 }}>{msg}</div>}
+
+      <div style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+        <label style={{ fontSize: 13, fontWeight: "bold" }}>Select Subject:</label>
+        <select style={{ ...inp, width: "auto", minWidth: 260 }} value={selectedCourseId} onChange={e => setSelectedCourseId(e.target.value)}>
+          <option value="">-- Select Subject --</option>
+          {courses.map(c => <option key={c.id} value={c.id}>{c.course_title} ({c.subject_catalog_nbr})</option>)}
+        </select>
+      </div>
+
+      {selectedCourseId && (
+        <>
+          <table style={tbl}>
+            <thead>
+              <tr>
+                <th style={th}>Assignment Name</th>
+                <th style={th}>Category</th>
+                <th style={th}>Max Marks</th>
+                <th style={th}>Begin Date</th>
+                <th style={th}>Due Date</th>
+                <th style={th}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {assignments.map(a => (
+                <tr key={a.id}>
+                  <td style={td}>{a.assignment_name}</td>
+                  <td style={td}>{a.category}</td>
+                  <td style={td}>{a.max_marks}</td>
+                  <td style={td}>{a.begin_date || ""}</td>
+                  <td style={td}>{a.due_date || ""}</td>
+                  <td style={td}><button onClick={() => del(a.id)} style={{ ...btn("#cc0000"), padding: "2px 10px" }}>Delete</button></td>
+                </tr>
+              ))}
+              {assignments.length === 0 && <tr><td colSpan={6} style={{ ...td, textAlign: "center", color: "#888" }}>No assignments found</td></tr>}
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: 20, border: "1px solid #ddd", padding: 16, background: "#fafafa" }}>
+            <div style={{ fontWeight: "bold", fontSize: 14, marginBottom: 12 }}>Add Assignment</div>
+            <form onSubmit={add}>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+                <div>
+                  <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Assignment Name</label>
+                  <input style={inp} value={form.assignment_name} onChange={e => setForm({ ...form, assignment_name: e.target.value })} required placeholder="e.g. mst" />
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <select className="border border-gray-300 px-2 py-1" value={newAssignment.category} onChange={e => setNewAssignment({...newAssignment, category: e.target.value})}>
-                    <option>Mid-Term</option>
-                    <option>End-Term</option>
-                    <option>Quiz</option>
-                    <option>Assignment</option>
+                <div>
+                  <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Category</label>
+                  <select style={inp} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                    {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Assignment"].map(c => <option key={c}>{c}</option>)}
                   </select>
-                  <input placeholder="Max Marks" type="number" className="border border-gray-300 px-2 py-1" value={newAssignment.max_marks} onChange={e => setNewAssignment({...newAssignment, max_marks: e.target.value})} required />
                 </div>
-                <button type="submit" disabled={createAssignment.isPending} className="bg-[#8B1A1A] text-white text-sm px-4 py-1.5 font-bold">Add Assignment</button>
-              </form>
-            </div>
-            
-            {/* Update Marks */}
-            <div className="bg-white p-4 shadow-sm border border-gray-200">
-              <h2 className="font-bold text-lg mb-4 text-[#cc6600]">Enter Marks</h2>
-              <form onSubmit={handleUpdateMarks} className="flex gap-2 text-sm">
-                <input placeholder="College ID" className="border border-gray-300 px-2 py-1 w-28" value={markData.student_college_id} onChange={e => setMarkData({...markData, student_college_id: e.target.value})} required />
-                <input placeholder="Assign ID" type="number" className="border border-gray-300 px-2 py-1 w-24" value={markData.assignment_id} onChange={e => setMarkData({...markData, assignment_id: e.target.value})} required />
-                <input placeholder="Marks" type="number" step="0.5" className="border border-gray-300 px-2 py-1 flex-1" value={markData.marks} onChange={e => setMarkData({...markData, marks: e.target.value})} required />
-                <button type="submit" disabled={updateMarks.isPending} className="bg-[#0066cc] text-white px-4 py-1 font-bold">Save</button>
-              </form>
-            </div>
+                <div>
+                  <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Max Marks</label>
+                  <input style={inp} type="number" value={form.max_marks} onChange={e => setForm({ ...form, max_marks: e.target.value })} required />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Begin Date (MM/DD/YYYY)</label>
+                  <input style={inp} value={form.begin_date} onChange={e => setForm({ ...form, begin_date: e.target.value })} placeholder="03/12/2026" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Due Date (MM/DD/YYYY)</label>
+                  <input style={inp} value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} placeholder="04/20/2026" />
+                </div>
+              </div>
+              <button type="submit" style={{ ...btn("#1a7a1a"), padding: "6px 16px" }}>Add Assignment</button>
+            </form>
           </div>
-        </div>
-      </main>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─── TAB 4: ENTER MARKS ───────────────────────────────────────────── */
+function MarksTab() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [grid, setGrid] = useState<MarksGrid | null>(null);
+  const [inputs, setInputs] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => { apiFetch("/admin/courses").then(setCourses); }, []);
+
+  const loadGrid = useCallback(async (courseId: string) => {
+    if (!courseId) { setGrid(null); return; }
+    const data: MarksGrid = await apiFetch(`/admin/courses/${courseId}/marks`);
+    setGrid(data);
+    const init: Record<string, string> = {};
+    data.marks.forEach(m => {
+      const key = `${m.student_college_id}_${m.assignment_id}`;
+      init[key] = m.marks_obtained !== null && m.marks_obtained !== undefined ? String(m.marks_obtained) : "";
+    });
+    setInputs(init);
+  }, []);
+
+  useEffect(() => { loadGrid(selectedCourseId); }, [selectedCourseId, loadGrid]);
+
+  const save = async () => {
+    if (!grid) return;
+    setSaving(true); setMsg("");
+    try {
+      const marks = [];
+      for (const student of grid.students) {
+        for (const assignment of grid.assignments) {
+          const key = `${student.college_id}_${assignment.id}`;
+          const raw = inputs[key];
+          const val = raw === "" || raw === undefined ? null : parseFloat(raw);
+          marks.push({ student_college_id: student.college_id, assignment_id: assignment.id, marks_obtained: val });
+        }
+      }
+      await apiFetch("/admin/marks/batch", { method: "POST", body: JSON.stringify({ marks }) });
+      setMsg("✓ All marks saved successfully!");
+      loadGrid(selectedCourseId);
+    } catch { setMsg("Error saving marks"); } finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 16, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: 8 }}>Enter / Update Marks</h2>
+
+      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+        <label style={{ fontSize: 13, fontWeight: "bold" }}>Select Subject:</label>
+        <select style={{ ...inp, width: "auto", minWidth: 300 }} value={selectedCourseId} onChange={e => setSelectedCourseId(e.target.value)}>
+          <option value="">-- Select Subject --</option>
+          {courses.map(c => <option key={c.id} value={c.id}>{c.course_title} ({c.subject_catalog_nbr})</option>)}
+        </select>
+      </div>
+
+      {msg && <div style={{ background: msg.includes("✓") ? "#e6ffe6" : "#ffe6e6", border: "1px solid #aaa", padding: "8px 14px", marginBottom: 14, fontSize: 13 }}>{msg}</div>}
+
+      {grid && grid.assignments.length === 0 && (
+        <div style={{ color: "#888", fontSize: 13 }}>No assignments found for this subject. Add assignments first.</div>
+      )}
+
+      {grid && grid.assignments.length > 0 && (
+        <>
+          <div style={{ overflowX: "auto", marginBottom: 16 }}>
+            <table style={{ ...tbl, minWidth: 600 }}>
+              <thead>
+                <tr>
+                  <th style={{ ...th, minWidth: 80 }}>Roll No.</th>
+                  <th style={{ ...th, minWidth: 160 }}>Student Name</th>
+                  {grid.assignments.map(a => (
+                    <th key={a.id} style={{ ...th, minWidth: 90, textAlign: "center" }}>
+                      <div>{a.assignment_name}</div>
+                      <div style={{ fontSize: 11, fontWeight: "normal", color: "#888" }}>Max: {a.max_marks}</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {grid.students.map((s, si) => (
+                  <tr key={s.college_id} style={{ background: si % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                    <td style={td}>{s.college_id}</td>
+                    <td style={td}>{s.name}</td>
+                    {grid.assignments.map(a => {
+                      const key = `${s.college_id}_${a.id}`;
+                      return (
+                        <td key={a.id} style={{ ...td, textAlign: "center" }}>
+                          <input
+                            type="number"
+                            min={0}
+                            max={a.max_marks}
+                            step={0.5}
+                            value={inputs[key] ?? ""}
+                            onChange={e => setInputs(prev => ({ ...prev, [key]: e.target.value }))}
+                            style={{ width: 70, border: "1px solid #bbb", padding: "3px 6px", fontSize: 13, textAlign: "right" }}
+                            placeholder="—"
+                          />
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+                {grid.students.length === 0 && (
+                  <tr><td colSpan={2 + grid.assignments.length} style={{ ...td, textAlign: "center", color: "#888" }}>No students enrolled in this subject</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <button onClick={save} disabled={saving} style={{ ...btn("#1a7a1a"), padding: "8px 24px", fontSize: 14 }}>
+            {saving ? "Saving..." : "Save All Marks"}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─── TAB 5: ENROLL STUDENTS ───────────────────────────────────────── */
+function EnrollTab() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set());
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    apiFetch("/admin/courses").then(setCourses);
+    apiFetch("/admin/students").then(setAllStudents);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedCourseId) { setEnrolledIds(new Set()); setChecked({}); return; }
+    apiFetch(`/admin/courses/${selectedCourseId}/enrollments`).then((enrolled: { college_id: string }[]) => {
+      const ids = new Set(enrolled.map(e => e.college_id));
+      setEnrolledIds(ids);
+      const c: Record<string, boolean> = {};
+      allStudents.forEach(s => { c[s.college_id] = ids.has(s.college_id); });
+      setChecked(c);
+    });
+  }, [selectedCourseId, allStudents]);
+
+  const save = async () => {
+    setSaving(true); setMsg("");
+    try {
+      for (const s of allStudents) {
+        const isChecked = checked[s.college_id];
+        const wasEnrolled = enrolledIds.has(s.college_id);
+        if (isChecked && !wasEnrolled) {
+          await apiFetch("/admin/enroll", { method: "POST", body: JSON.stringify({ student_college_id: s.college_id, course_id: parseInt(selectedCourseId) }) });
+        } else if (!isChecked && wasEnrolled) {
+          await apiFetch("/admin/enroll", { method: "DELETE", body: JSON.stringify({ student_college_id: s.college_id, course_id: selectedCourseId }) });
+        }
+      }
+      setMsg("✓ Enrollment saved!");
+      apiFetch(`/admin/courses/${selectedCourseId}/enrollments`).then((enrolled: { college_id: string }[]) => {
+        setEnrolledIds(new Set(enrolled.map(e => e.college_id)));
+      });
+    } catch { setMsg("Error saving enrollment"); } finally { setSaving(false); }
+  };
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 16, marginBottom: 16, borderBottom: "1px solid #eee", paddingBottom: 8 }}>Enroll Students</h2>
+
+      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+        <label style={{ fontSize: 13, fontWeight: "bold" }}>Select Subject:</label>
+        <select style={{ ...inp, width: "auto", minWidth: 300 }} value={selectedCourseId} onChange={e => setSelectedCourseId(e.target.value)}>
+          <option value="">-- Select Subject --</option>
+          {courses.map(c => <option key={c.id} value={c.id}>{c.course_title} ({c.subject_catalog_nbr})</option>)}
+        </select>
+      </div>
+
+      {msg && <div style={{ background: msg.includes("✓") ? "#e6ffe6" : "#ffe6e6", border: "1px solid #aaa", padding: "8px 14px", marginBottom: 14, fontSize: 13 }}>{msg}</div>}
+
+      {selectedCourseId && (
+        <>
+          <table style={tbl}>
+            <thead>
+              <tr>
+                <th style={{ ...th, width: 50, textAlign: "center" }}>Enroll</th>
+                <th style={th}>Roll Number</th>
+                <th style={th}>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allStudents.map((s, i) => (
+                <tr key={s.college_id} style={{ background: i % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                  <td style={{ ...td, textAlign: "center" }}>
+                    <input type="checkbox" checked={!!checked[s.college_id]} onChange={e => setChecked(prev => ({ ...prev, [s.college_id]: e.target.checked }))} style={{ width: 16, height: 16 }} />
+                  </td>
+                  <td style={td}>{s.college_id}</td>
+                  <td style={td}>{s.name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: 16 }}>
+            <button onClick={save} disabled={saving} style={{ ...btn("#1a7a1a"), padding: "8px 24px", fontSize: 14 }}>
+              {saving ? "Saving..." : "Save Enrollment"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

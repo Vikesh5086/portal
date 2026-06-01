@@ -1,0 +1,225 @@
+You are rebuilding the Thapar Institute student portal clone. Fix ALL issues mentioned below. This is a complete overhaul of styling + admin panel.
+
+=== PART 1: FIX STYLING - MAKE IT EXACT SAME AS ORIGINAL ===
+
+The current version looks wrong. Follow these EXACT specifications:
+
+--- NAVBAR (Top bar) ---
+- Background: #2d2d2d (dark gray, NOT black)
+- Height: 45px
+- Left: "ti" logo in red (#8B0000), small, 28px
+- Center: Search bar with gray border, placeholder "Search in Menu", magnifier icon
+- Right icons: clock, heart, home, bell, three-dots, compass - all white, 18px
+- NO "Menu" button on left in assignments/grades pages
+- ON homepage only: "Menu ▼" button left side next to logo
+
+--- COLORFUL STRIP (below navbar) ---
+- Height: 8px ONLY - very thin strip
+- Colors left to right: #e74c3c, #e67e22, #f1c40f, #2ecc71, #1abc9c, #3498db, #9b59b6, #e74c3c, #e67e22, #f1c40f, #2ecc71, #3498db, #9b59b6, #e74c3c
+- Each color block equal width
+- NO height more than 8px
+
+--- MOSAIC BANNER (below colorful strip, on assignments page) ---
+- Height: 55px
+- This is the woven textile pattern - use this CSS:
+background: repeating-linear-gradient(
+  45deg,
+  #8B4513 0px, #8B4513 3px,
+  #D2691E 3px, #D2691E 6px,
+  #CD853F 6px, #CD853F 9px,
+  #8B0000 9px, #8B0000 12px,
+  #4169E1 12px, #4169E1 15px,
+  #228B22 15px, #228B22 18px
+);
+opacity: 0.85;
+
+--- BREADCRUMB BAR (light blue bar below mosaic) ---
+- Background: #b8cce4 (light blue)
+- Height: 28px
+- Font size: 12px, color: #333
+- Text: "Favorites ▼ > Main Menu ▼ > Nav Coll Navigator > View My Assignments"
+- Padding: 6px 15px
+
+--- PAGE BACKGROUND ---
+- Color: #f0f0f0 (light gray)
+- Content area: white, max-width 900px, margin: 0 auto, padding 20px
+
+--- ASSIGNMENTS PAGE FIXES ---
+"View Assignments and Grades" should appear ONCE only, not twice
+Remove the duplicate heading
+
+--- COURSE TABLE ---
+- Table border: 1px solid #cccccc
+- Header row background: white
+- Header text color: #cc6600 (orange) - NOT dark blue, NOT bold
+- Header font-weight: normal (400) - NOT bold
+- Header font-size: 13px
+- Course title links: #0066cc (medium blue) - NOT dark navy, NOT bold
+- Course title font-weight: normal (400) - NOT bold, NOT uppercase
+- Row height: 28px
+- Alternating row: white and #f9f9f9
+- Font: Arial, sans-serif, 13px
+
+--- GRADES PAGE FIXES ---
+- "Grades" section box background: #fdf5e6 (light cream)
+- "Grades" heading: color #cc0000, font-size 14px, font-weight bold
+- Current Mid-Term Grade and Current Overall Grade: on SEPARATE lines, left-aligned with label, value on same line
+- Assignment table header: color #cc6600, font-weight normal, font-size 13px
+- Assignment links (mst, Quiz1 etc): #0066cc, normal weight
+- Grade values right-aligned in their column
+- "Out of" values right-aligned
+- TUT1 grade: show exactly what is in database (0.00 if 0, blank if null)
+- "~" symbol after grade values
+- "Other Information" column: EMPTY - do NOT show "\u00A0" or any placeholder text
+
+--- CLASS INFO BOX ---
+- Light gray border box
+- Green down-arrow "▼" before course code
+- "Change Class" button: background #f0e68c (light yellow/khaki), border 1px solid #999, font-size 12px
+- Days/Times table inside: simple, font-size 12px
+- Date format: 06/01/2026 - 07/01/2026 (DD/MM/YYYY format)
+- Time format: Tu 07:00-08:00 (NOT "Tu 7:00AM-8:00AM")
+
+--- TABS (Search/Plan/Enroll/My Academics) ---
+- Simple tab style, no heavy borders
+- Active tab "Enroll": white background, border on top/left/right only, font-weight bold
+- Inactive tabs: no background, plain text
+- Font-size: 13px
+
+--- GO TO SECTION ---
+- "Go To" text + dropdown select box + ">>" red button (#cc0000)
+- Dropdown: standard HTML select, width 220px
+- ">>" button: red background, white text, padding 4px 8px
+
+--- HOMEPAGE TILES ---
+IMPORTANT: Use the EXACT same illustrated PNG images from the original portal.
+Download and use these image URLs for tiles OR recreate them as close as possible using SVG:
+
+Tile images description (recreate as inline SVG, muted colors):
+1. Student Response Survey: 3 person icons (yellow/orange) with bar chart
+2. Change My Password: large padlock with circular arrow around it (black outline only, no fill)
+3. Profile: gray person silhouette with pencil
+4. Student_Center: book + play button + graduation cap + settings gear + globe
+5. Manage Classes: calendar grid with graduation cap and small person (red)
+6. I Grade Application: clipboard with checklist and magnifier
+7. Raise Document Request: blue document with graduation cap and person
+8. Backlog Course Registration: document with checkmark
+9. Makeup Test Registration: checklist with colored dots
+10. No Dues Status: stack of rupee notes (green/teal colored)
+11. Academic Progress: pie chart (green, pink, white segments) + text "The Academic Requirements report is not available."
+12. Financial: building/bank icon with money
+13. View My Grades: Oracle PeopleSoft logo style (white box with "ORACLE PEOPLESOFT" text)
+
+Tile styling:
+- White background
+- Border: 1px solid #d0d0d0
+- Title: top-left, font-size 13px, font-weight bold, color #333, padding 12px 12px 0 12px
+- Icon/image: centered, bottom half of tile
+- Tile size: ~300px wide, ~180px tall
+- Grid: 4 columns
+- Hover: slight box-shadow
+- Page background behind tiles: #f0f0f0
+- "Student Homepage" title: font-size 22px, color #333, padding 15px 0
+
+--- LOGIN PAGE ---
+Keep as is if already working, just ensure:
+- Left side: white/light gray
+- Right side: campus building image with dark red overlay (#8B0000, 55% opacity)
+- Login card: centered left side, white, subtle shadow
+- Sign In button: #333333 background, white text
+
+=== PART 2: ADMIN / TEACHER PANEL (Complete Rebuild) ===
+
+Create a new route /admin with its own HTML page.
+
+Admin login credentials (separate from student):
+- Any user with role='admin' OR role='teacher' in users table
+
+--- TEACHER PANEL FEATURES ---
+
+The teacher panel must have these sections/tabs:
+
+TAB 1 - "Manage Students"
+- Table showing all students: Roll Number | Name | Actions
+- "Add Student" button → form: Roll Number, Full Name, Password
+
+TAB 2 - "Manage Subjects"  
+- Table showing all subjects with: Subject Code | Subject Name | Course ID | Class Nbr | Subject Catalog Nbr | Class Section | Actions
+- "Add Subject" button → form with fields:
+  * Subject Name (e.g. "LINEAR ALGEBRA")
+  * Course ID (e.g. "001340")
+  * Class Nbr (e.g. "454")
+  * Subject Catalog Nbr (e.g. "UCT 201")
+  * Class Section (e.g. "1R1")
+  * Instructor Name
+  * Days and Times (e.g. "Tu 07:00-08:00")
+  * Room (e.g. "TBA")
+  * Start Date, End Date
+- Edit/Delete buttons per subject
+
+TAB 3 - "Manage Assignments"
+- Dropdown: Select Subject
+- Table showing assignments for that subject: Assignment Name | Category | Max Marks | Begin Date | Due Date | Actions
+- "Add Assignment" button → form:
+  * Assignment Display Name (e.g. "mst")
+  * Category (e.g. "MST", "Quiz 1", "Quiz 2", "TUT1", "EST")
+  * Max Marks
+  * Begin Date
+  * Due Date
+- Edit/Delete per assignment
+
+TAB 4 - "Enter/Update Marks" (MAIN FEATURE)
+Step 1: Select Subject (dropdown of all subjects)
+Step 2: After selecting subject, show table:
+  - Columns: Roll Number | Student Name | [one column per assignment for that subject]
+  - Each marks cell is an INPUT field (number, min 0, max = that assignment's max marks)
+  - Pre-filled with existing marks if already entered
+  - Empty if not yet entered
+  - Below table: "Save All Marks" button
+  - On save: updates all marks for all students for that subject in one click
+  - Show success message after save
+
+TAB 5 - "Enroll Students"
+- Select Subject dropdown
+- Checkboxes for all students
+- Pre-checked if already enrolled
+- "Save Enrollment" button
+
+--- ADMIN DATABASE ADDITIONS ---
+Make sure these fields exist:
+- marks table: allow NULL for marks_obtained (NULL = not entered, different from 0)
+- Add 'teacher' role support in users table
+
+--- ADMIN UI STYLE ---
+- Clean white pages
+- Simple blue/gray color scheme
+- Tab navigation at top
+- Tables with borders
+- Standard HTML form elements
+- Responsive enough for desktop use
+- Show logged-in teacher name top right
+- Logout button
+
+=== PART 3: STUDENT PORTAL - MARKS DISPLAY ===
+
+When teacher enters marks via admin panel:
+- Student sees updated marks immediately on /grades/:courseId page
+- NULL marks = blank cell (not 0.00)
+- 0 marks = show 0.00
+- Grade percentages recalculate automatically based on entered marks
+
+=== PART 4: SEED DATA FIX ===
+
+Fix the existing seed data:
+- TUT1 marks for Vikesh Kumar: set to NULL (not 0) so it shows blank
+- Date format in class info: show as "06/01/2026 - 07/01/2026"
+- Time format: "Tu 07:00-08:00"
+
+=== TECHNICAL REQUIREMENTS ===
+- Stack: Node.js + Express + SQLite + plain HTML/CSS/JS
+- NO React, NO TypeScript, NO Vite, NO fancy build tools
+- All HTML files in /public folder
+- Single styles.css file
+- Sessions for auth (express-session)
+- Admin routes protected: redirect to /admin/login if not admin/teacher role
+- Student routes protected: redirect to /login if not logged in
