@@ -46,13 +46,13 @@ export default function Grades() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f0f0f0", fontFamily: "Arial, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "Arial, sans-serif" }}>
       <style>{`.group:hover > div { display: block !important; }`}</style>
       <BreadcrumbBar path="View My Assignments" />
       <NavHeader variant="student" />
       <MosaicBanner />
 
-      <main style={{ maxWidth: 900, margin: "16px auto", background: "#fff", padding: 20, border: "1px solid #ccc" }}>
+      <main style={{ marginLeft: 12, marginTop: 16, marginRight: 16, maxWidth: 650, background: "#fff", padding: 20, border: "1px solid #d6d6d6" }}>
         <PageHeader title="View Assignments and Grades" subtitle="Class Grades" />
 
         {isLoading ? (
@@ -110,7 +110,7 @@ export default function Grades() {
             </div>
 
             {/* Grades box */}
-            <div style={{ background: "#fdf5e6", border: "1px solid #ccc", padding: "12px 16px", marginBottom: 16 }}>
+            <div style={{ background: "#ffffff", border: "1px solid #d6d6d6", padding: "12px 16px", marginBottom: 16 }}>
               <div style={{ color: "#cc0000", fontWeight: "bold", fontSize: 14, marginBottom: 10 }}>Grades</div>
               <table style={{ fontSize: 13, borderCollapse: "collapse", marginLeft: "auto" }}>
                 <tbody>

@@ -1,0 +1,147 @@
+IMPORTANT: Do NOT create a modern dashboard. Clone the original Thapar University ERP (PeopleSoft Redwood theme) layout pixel-by-pixel.
+
+LAYOUT REQUIREMENTS:
+
+1. Entire page must be LEFT-ALIGNED, NOT centered.
+2. Main content container starts approximately 15px from left edge.
+3. Content width should be around 620-650px only.
+4. Large empty white space must remain on the right side exactly like the original portal.
+5. Use pure white page background (#ffffff).
+6. No card shadows.
+7. No rounded modern containers.
+8. No glassmorphism.
+9. No Tailwind dashboard appearance.
+
+HEADER:
+
+1. Top blue navigation bar:
+   height: 28px
+   background: #b8cde5
+2. Below it dark header:
+   height: 45px
+   background: #2b2b2b
+3. Search box centered horizontally in dark header.
+4. Home, notification and profile icons on right side.
+
+REDWOOD STRIP:
+
+Use EXACT downloaded image:
+PT_REDWOOD_STRIP1_1.PNG
+
+Image dimensions:
+width: 981px
+height: 6px
+
+Requirements:
+- Place directly below dark header.
+- Repeat horizontally across full page width.
+- No scaling distortion.
+- Exact same height as original.
+- Background-size: auto 6px;
+- Background-repeat: repeat-x;
+
+MAIN CONTENT:
+
+Position:
+margin-left: 12px
+margin-top: 20px
+
+Student Name:
+VIKESH KUMAR
+
+Tabs:
+Search | Plan | Enroll | My Academics
+
+Use original PeopleSoft styling:
+- light gray borders
+- thin fonts
+- selected tab slightly darker
+
+TERM INFORMATION PAGE:
+
+Heading:
+View Assignments and Grades
+
+Under heading:
+JUNE 2026 | Undergraduate | Thapar Institute of Eng & Tech
+
+TABLE REQUIREMENTS:
+
+1. Use original HTML table appearance.
+2. Border color: #d6d6d6
+3. Background: white
+4. Font size: 12px
+5. Row height: compact
+6. No zebra striping.
+7. No modern table styling.
+
+GRADES PAGE:
+
+VERY IMPORTANT:
+
+Grades section background must be WHITE.
+
+Current Replit version incorrectly uses cream/beige color.
+
+Fix:
+
+background: #ffffff
+border: 1px solid #d6d6d6
+
+Display:
+
+Current Mid-Term Grade     31.67%
+Current Overall Grade      31.50%
+
+aligned to right side exactly like original.
+
+CLASS ASSIGNMENTS TABLE:
+
+Columns:
+Begin Date
+Due Date
+Assignment
+Category
+Grade
+Out of
+Other Information
+
+Data must use compact PeopleSoft styling.
+
+ACCORDIONS:
+
+Assignment Categories
+Instructor Comments
+Student Assignment Dates
+
+Requirements:
+- Flat gray accordion bars
+- Thin border
+- Small green expand icon on left
+- No modern animation
+
+TYPOGRAPHY:
+
+Font family:
+Arial, Helvetica, sans-serif
+
+Heading sizes:
+Main heading: 18px
+Normal text: 12px
+
+Colors:
+Heading: #333333
+Links: #2a5db0
+
+OVERALL GOAL:
+
+The result should look like a screenshot taken directly from the real Thapar ERP portal.
+
+Do not improve the design.
+Do not modernize the design.
+Do not center the content.
+Do not add extra spacing.
+Do not add shadows.
+Do not add modern cards.
+
+Match the real screenshots as closely as possible.

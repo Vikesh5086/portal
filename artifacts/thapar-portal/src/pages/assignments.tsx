@@ -86,13 +86,13 @@ export default function Assignments() {
   if (!user) return null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f0f0f0", fontFamily: "Arial, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "Arial, sans-serif" }}>
       <style>{`.group:hover > div { display: block !important; }`}</style>
       <BreadcrumbBar path="View My Assignments" />
       <NavHeader variant="student" />
       <MosaicBanner />
 
-      <main style={{ maxWidth: 900, margin: "16px auto", background: "#fff", padding: 20, border: "1px solid #ccc" }}>
+      <main style={{ marginLeft: 12, marginTop: 16, marginRight: 16, maxWidth: 650, background: "#fff", padding: 20, border: "1px solid #d6d6d6" }}>
         <PageHeader title="View Assignments and Grades" subtitle="View Assignments and Grades" />
 
         {isLoading ? (

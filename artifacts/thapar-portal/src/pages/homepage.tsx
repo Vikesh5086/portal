@@ -2,25 +2,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
 
-const STRIP_COLORS = [
-  "#e74c3c","#e67e22","#f1c40f","#2ecc71","#1abc9c","#3498db","#9b59b6",
-  "#e74c3c","#e67e22","#f1c40f","#2ecc71","#3498db","#9b59b6","#e74c3c",
-];
-
 export function MosaicBanner() {
   return (
     <div style={{
       height: 55,
-      background: `repeating-linear-gradient(
-        45deg,
-        #8B4513 0px, #8B4513 3px,
-        #D2691E 3px, #D2691E 6px,
-        #CD853F 6px, #CD853F 9px,
-        #8B0000 9px, #8B0000 12px,
-        #4169E1 12px, #4169E1 15px,
-        #228B22 15px, #228B22 18px
-      )`,
-      opacity: 0.85,
+      backgroundImage: "url('/redwood-strip.png')",
+      backgroundRepeat: "repeat",
+      backgroundSize: "auto 55px",
     }} />
   );
 }
@@ -96,12 +84,14 @@ export function NavHeader({ variant = "home" }: { variant?: "home" | "student" }
         </div>
       </header>
 
-      {/* 8px colorful strip */}
-      <div style={{ height: 8, display: "flex", width: "100%" }}>
-        {STRIP_COLORS.map((c, i) => (
-          <div key={i} style={{ flex: 1, background: c }} />
-        ))}
-      </div>
+      {/* Redwood strip */}
+      <div style={{
+        height: 6,
+        backgroundImage: "url('/redwood-strip.png')",
+        backgroundRepeat: "repeat-x",
+        backgroundSize: "auto 6px",
+        width: "100%",
+      }} />
     </>
   );
 }
