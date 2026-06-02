@@ -99,7 +99,7 @@ export default function Grades() {
                       <tr>
                         <td style={{ ...tdStyle(), borderLeft: "1px solid #cccccc" }}>Tu 07:00-08:00</td>
                         <td style={tdStyle()}>TBA</td>
-                        <td style={tdStyle()}>SUNITA GARHWAL</td>
+                        <td style={tdStyle()}>{gradesData.course.instructor || ""}</td>
                         <td style={{ ...tdStyle(), borderRight: "1px solid #cccccc" }}>01/06/2026 - 01/07/2026</td>
                       </tr>
                     </tbody>
@@ -111,20 +111,18 @@ export default function Grades() {
             {/* Grades box */}
             <div style={{ background: "#ffffff", border: "1px solid #d6d6d6", padding: "12px 16px", marginBottom: 16 }}>
               <div style={{ color: "#cc6600", fontWeight: "bold", fontSize: 14, marginBottom: 10 }}>Grades</div>
-              <table style={{ fontSize: 13, borderCollapse: "collapse", marginLeft: "auto" }}>
+              <table style={{ fontSize: 13, borderCollapse: "collapse", margin: "0 auto" }}>
                 <tbody>
                   <tr>
                     <td style={{ padding: "2px 16px 2px 0", textAlign: "right" }}>Current Mid-Term Grade</td>
                     <td style={{ padding: "2px 0" }}>
                       {gradesData.midterm_grade != null ? `${gradesData.midterm_grade.toFixed(2)}%` : "-"}
-                      {gradesData.midterm_grade != null && <span style={{ color: "#666", marginLeft: 4 }}>~</span>}
                     </td>
                   </tr>
                   <tr>
                     <td style={{ padding: "2px 16px 2px 0", textAlign: "right" }}>Current Overall Grade</td>
                     <td style={{ padding: "2px 0" }}>
                       {gradesData.overall_grade != null ? `${gradesData.overall_grade.toFixed(2)}%` : "-"}
-                      {gradesData.overall_grade != null && <span style={{ color: "#666", marginLeft: 4 }}>~</span>}
                     </td>
                   </tr>
                 </tbody>
@@ -165,7 +163,7 @@ export default function Grades() {
                         <td style={tdStyle()}>{assignment.category}</td>
                         <td style={{ ...tdStyle(), textAlign: "right" }}>
                           {assignment.marks_obtained !== null && assignment.marks_obtained !== undefined
-                            ? <>{fmt(assignment.marks_obtained)} <span style={{ color: "#666" }}>~</span></>
+                            ? fmt(assignment.marks_obtained)
                             : ""}
                         </td>
                         <td style={{ ...tdStyle(), textAlign: "right" }}>{assignment.max_marks}</td>

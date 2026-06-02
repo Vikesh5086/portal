@@ -4,7 +4,7 @@ import { NavHeader } from "./homepage";
 import { useEffect, useState, useCallback } from "react";
 
 type Student = { id: number; college_id: string; name: string; role: string };
-type Course = { id: number; course_title: string; course_id: string; class_nbr: string; subject_catalog_nbr: string; class_section: string };
+type Course = { id: number; course_title: string; course_id: string; class_nbr: string; subject_catalog_nbr: string; class_section: string; instructor: string };
 type Assignment = { id: number; course_id: number; assignment_name: string; category: string; begin_date: string; due_date: string; max_marks: number };
 type MarksGrid = { assignments: Assignment[]; students: Student[]; marks: { student_college_id: string; assignment_id: number; marks_obtained: number | null }[] };
 
@@ -145,7 +145,7 @@ function StudentsTab() {
 /* ─── TAB 2: SUBJECTS ──────────────────────────────────────────────── */
 function SubjectsTab() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [form, setForm] = useState({ course_title: "", course_id: "", class_nbr: "", subject_catalog_nbr: "", class_section: "1R1" });
+  const [form, setForm] = useState({ course_title: "", course_id: "", class_nbr: "", subject_catalog_nbr: "", class_section: "1R1", instructor: "" });
   const [msg, setMsg] = useState("");
 
   const load = useCallback(() => apiFetch("/admin/courses").then(setCourses), []);
@@ -155,7 +155,7 @@ function SubjectsTab() {
     e.preventDefault();
     try {
       await apiFetch("/admin/course", { method: "POST", body: JSON.stringify(form) });
-      setForm({ course_title: "", course_id: "", class_nbr: "", subject_catalog_nbr: "", class_section: "1R1" });
+      setForm({ course_title: "", course_id: "", class_nbr: "", subject_catalog_nbr: "", class_section: "1R1", instructor: "" });
       setMsg("Subject added!"); load();
     } catch { setMsg("Error adding subject"); }
   };
@@ -179,6 +179,7 @@ function SubjectsTab() {
             <th style={th}>Class Nbr</th>
             <th style={th}>Subject Catalog Nbr</th>
             <th style={th}>Class Section</th>
+            <th style={th}>Instructor</th>
             <th style={th}>Action</th>
           </tr>
         </thead>
@@ -190,6 +191,7 @@ function SubjectsTab() {
               <td style={td}>{c.class_nbr}</td>
               <td style={td}>{c.subject_catalog_nbr}</td>
               <td style={td}>{c.class_section}</td>
+              <td style={td}>{c.instructor}</td>
               <td style={td}><button onClick={() => del(c.id)} style={{ ...btn("#cc0000"), padding: "2px 10px" }}>Delete</button></td>
             </tr>
           ))}
@@ -220,6 +222,10 @@ function SubjectsTab() {
               <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Class Section</label>
               <input style={inp} value={form.class_section} onChange={e => setForm({ ...form, class_section: e.target.value })} placeholder="e.g. 1R1" />
             </div>
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Instructor Name(s)</label>
+            <input style={inp} value={form.instructor} onChange={e => setForm({ ...form, instructor: e.target.value })} placeholder="e.g. SUNITA GARHWAL ." />
           </div>
           <button type="submit" style={{ ...btn("#1a7a1a"), padding: "6px 16px" }}>Add Subject</button>
         </form>
@@ -318,7 +324,7 @@ function AssignmentsTab() {
                 <div>
                   <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Category</label>
                   <select style={inp} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                    {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Session", "Makeup", "Assignment"].map(c => <option key={c}>{c}</option>)}
+                    {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Session", "Makeup", "LE 1", "LE 2", "Assignment"].map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
@@ -439,7 +445,7 @@ function MarksTab() {
                     <div>
                       <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Category</label>
                       <select style={inp} value={newAssign.category} onChange={e => setNewAssign({ ...newAssign, category: e.target.value })}>
-                        {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Session", "Makeup", "Assignment"].map(c => <option key={c}>{c}</option>)}
+                        {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Session", "Makeup", "LE 1", "LE 2", "Assignment"].map(c => <option key={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>

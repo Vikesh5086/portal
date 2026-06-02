@@ -61,12 +61,12 @@ router.get("/admin/courses", requireAdmin, (_req, res) => {
 router.post("/admin/course", requireAdmin, (req, res) => {
   const parsed = CreateAdminCourseBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
-  const { course_title, course_id, class_nbr, subject_catalog_nbr, class_section } = parsed.data;
+  const { course_title, course_id, class_nbr, subject_catalog_nbr, class_section, instructor } = parsed.data;
   const db = getDb();
-  const result = db.prepare("INSERT INTO courses (course_title, course_id, class_nbr, subject_catalog_nbr, class_section) VALUES (?, ?, ?, ?, ?)").run(
-    course_title, course_id, class_nbr ?? null, subject_catalog_nbr ?? null, class_section ?? "1R1"
+  const result = db.prepare("INSERT INTO courses (course_title, course_id, class_nbr, subject_catalog_nbr, class_section, instructor) VALUES (?, ?, ?, ?, ?, ?)").run(
+    course_title, course_id, class_nbr ?? null, subject_catalog_nbr ?? null, class_section ?? "1R1", instructor ?? ""
   );
-  res.status(201).json({ id: result.lastInsertRowid, course_title, course_id, class_nbr, subject_catalog_nbr, class_section: class_section ?? "1R1" });
+  res.status(201).json({ id: result.lastInsertRowid, course_title, course_id, class_nbr, subject_catalog_nbr, class_section: class_section ?? "1R1", instructor: instructor ?? "" });
 });
 
 router.delete("/admin/courses/:courseId", requireAdmin, (req, res) => {

@@ -116,10 +116,10 @@ export default function Assignments() {
                         {course.course_title}
                       </Link>
                     </td>
-                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.course_id}</td>
-                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.class_nbr || ""}</td>
-                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.subject_catalog_nbr || ""}</td>
-                    <td style={{ padding: "3px 8px", borderBottom: "1px solid #cccccc", color: "#0066cc" }}>{course.class_section}</td>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#000" }}>{course.course_id}</td>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#000" }}>{course.class_nbr || ""}</td>
+                    <td style={{ padding: "3px 8px", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", color: "#000" }}>{course.subject_catalog_nbr || ""}</td>
+                    <td style={{ padding: "3px 8px", borderBottom: "1px solid #cccccc", color: "#000" }}>{course.class_section}</td>
                   </tr>
                 ))}
                 {(!courses || courses.length === 0) && (

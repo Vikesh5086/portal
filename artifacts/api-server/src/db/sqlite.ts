@@ -34,7 +34,8 @@ function initSchema(db: Database.Database) {
       course_id TEXT NOT NULL,
       class_nbr TEXT,
       subject_catalog_nbr TEXT,
-      class_section TEXT DEFAULT '1R1'
+      class_section TEXT DEFAULT '1R1',
+      instructor TEXT DEFAULT ''
     );
 
     CREATE TABLE IF NOT EXISTS student_courses (
@@ -63,6 +64,13 @@ function initSchema(db: Database.Database) {
       FOREIGN KEY (assignment_id) REFERENCES assignments(id)
     );
   `);
+
+  // Migration: add instructor column if it doesn't exist (for existing DBs)
+  try {
+    db.exec(`ALTER TABLE courses ADD COLUMN instructor TEXT DEFAULT ''`);
+  } catch {
+    // Column already exists, ignore
+  }
 }
 
 function seedData(db: Database.Database) {
@@ -72,21 +80,22 @@ function seedData(db: Database.Database) {
   db.prepare(`INSERT INTO users (college_id, password, name, role) VALUES (?, ?, ?, ?)`).run("ADMIN001", "admin123", "Admin User", "admin");
   db.prepare(`INSERT INTO users (college_id, password, name, role) VALUES (?, ?, ?, ?)`).run("102203001", "student123", "VIKESH KUMAR", "student");
 
-  const courses = [
-    ["LINEAR ALGEBRA", "001340", "454", "UCT 201", "1R1"],
-    ["STATISTICAL MODELING", "001430", "2257", "UCT 202", "1R1"],
-    ["UNIVERSAL HUMAN VALUES", "002195", "1510", "UCT 204", "1R1"],
-    ["ENGLISH LANGUAGE COURSE", "002196", "1882", "UCT 205", "1R1"],
-    ["OBJECT ORIENTED PROGRAMMING", "001385", "82", "UCT 303", "1R1"],
-    ["PRINCIPLES OF ELECTRONICS", "000421", "2178", "UEC00 2", "1R1"],
-    ["FUNDAMENTALS OF ECONOMICS", "000521", "1353", "UHU00 7", "1R1"],
+  const courses: [string, string, string, string, string, string][] = [
+    ["LINEAR ALGEBRA",               "001340", "454",  "UCT 201",  "1R1",  "SAPANPREET KAUR ."],
+    ["STATISTICAL MODELING",         "001430", "2257", "UCT 202",  "1R1",  "DEEPAK GARG ."],
+    ["UNIVERSAL HUMAN VALUES",       "002195", "1510", "UCT 204",  "1R1",  "SUNITA GARHWAL ."],
+    ["ENGLISH LANGUAGE COURSE",      "002196", "1882", "UCT 205",  "1R1",  "SAPANPREET KAUR ."],
+    ["PYTHON SCRIPTING/BASIC PROGRAM","002298", "4948", "UCT 206", "1R1C", "ANU BAJAJ . SUMIT MIGLANI ."],
+    ["OBJECT ORIENTED PROGRAMMING",  "001385", "82",   "UCT 303",  "1R1",  "RAJESH BHATIA ."],
+    ["PRINCIPLES OF ELECTRONICS",    "000421", "2178", "UEC00 2",  "1R1",  "MOHIT GARG ."],
+    ["FUNDAMENTALS OF ECONOMICS",    "000521", "1353", "UHU00 7",  "1R1",  "KAMLESH ARYA ."],
   ];
 
-  const insertCourse = db.prepare(`INSERT INTO courses (course_title, course_id, class_nbr, subject_catalog_nbr, class_section) VALUES (?, ?, ?, ?, ?)`);
+  const insertCourse = db.prepare(`INSERT INTO courses (course_title, course_id, class_nbr, subject_catalog_nbr, class_section, instructor) VALUES (?, ?, ?, ?, ?, ?)`);
   const insertEnroll = db.prepare(`INSERT INTO student_courses (student_college_id, course_id) VALUES (?, ?)`);
 
-  for (const [title, courseId, classNbr, subjectNbr, section] of courses) {
-    const result = insertCourse.run(title, courseId, classNbr, subjectNbr, section);
+  for (const [title, courseId, classNbr, subjectNbr, section, instructor] of courses) {
+    const result = insertCourse.run(title, courseId, classNbr, subjectNbr, section, instructor);
     insertEnroll.run("102203001", result.lastInsertRowid);
   }
 
@@ -95,7 +104,6 @@ function seedData(db: Database.Database) {
   const insertAssignment = db.prepare(`INSERT INTO assignments (course_id, assignment_name, category, begin_date, due_date, max_marks) VALUES (?, ?, ?, ?, ?, ?)`);
   const insertMark = db.prepare(`INSERT INTO marks (student_college_id, assignment_id, marks_obtained) VALUES (?, ?, ?)`);
 
-  // Dates stored as MM/DD/YYYY matching display format
   const assignments: [string, string, string, string, number][] = [
     ["mst",   "MST",   "03/12/2026", "04/20/2026", 30],
     ["Quiz1", "Quiz 1","04/01/2026", "05/29/2026", 11],
@@ -104,7 +112,6 @@ function seedData(db: Database.Database) {
     ["est",   "EST",   "05/27/2026", "06/05/2026", 40],
   ];
 
-  // NULL marks = blank; 0 = shows as 0.00; Tute is NULL (blank)
   const marksData: Record<string, number | null> = {
     "mst":   9.50,
     "Quiz1": 7.00,

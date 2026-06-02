@@ -290,6 +290,8 @@ components:
           type: ["string", "null"]
         class_section:
           type: string
+        instructor:
+          type: ["string", "null"]
 
     CourseInput:
       type: object
@@ -304,6 +306,8 @@ components:
         subject_catalog_nbr:
           type: string
         class_section:
+          type: string
+        instructor:
           type: string
 
     Assignment:

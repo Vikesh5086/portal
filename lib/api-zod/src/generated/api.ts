@@ -40,7 +40,8 @@ export const GetStudentCoursesResponseItem = zod.object({
   "course_id": zod.string(),
   "class_nbr": zod.string().nullish(),
   "subject_catalog_nbr": zod.string().nullish(),
-  "class_section": zod.string().optional()
+  "class_section": zod.string().optional(),
+  "instructor": zod.string().nullish()
 })
 export const GetStudentCoursesResponse = zod.array(GetStudentCoursesResponseItem)
 
@@ -59,7 +60,8 @@ export const GetStudentCourseGradesResponse = zod.object({
   "course_id": zod.string(),
   "class_nbr": zod.string().nullish(),
   "subject_catalog_nbr": zod.string().nullish(),
-  "class_section": zod.string().optional()
+  "class_section": zod.string().optional(),
+  "instructor": zod.string().nullish()
 }),
   "assignments": zod.array(zod.object({
   "id": zod.number(),
@@ -110,7 +112,8 @@ export const GetAdminStudentCoursesResponseItem = zod.object({
   "course_id": zod.string(),
   "class_nbr": zod.string().nullish(),
   "subject_catalog_nbr": zod.string().nullish(),
-  "class_section": zod.string().optional()
+  "class_section": zod.string().optional(),
+  "instructor": zod.string().nullish()
 })
 export const GetAdminStudentCoursesResponse = zod.array(GetAdminStudentCoursesResponseItem)
 
@@ -123,7 +126,8 @@ export const CreateAdminCourseBody = zod.object({
   "course_id": zod.string(),
   "class_nbr": zod.string().optional(),
   "subject_catalog_nbr": zod.string().optional(),
-  "class_section": zod.string().optional()
+  "class_section": zod.string().optional(),
+  "instructor": zod.string().optional()
 })
 
 

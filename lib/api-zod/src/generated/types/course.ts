@@ -15,4 +15,6 @@ export interface Course {
   /** @nullable */
   subject_catalog_nbr?: string | null;
   class_section?: string;
+  /** @nullable */
+  instructor?: string | null;
 }

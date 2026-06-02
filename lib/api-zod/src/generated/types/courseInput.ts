@@ -12,4 +12,5 @@ export interface CourseInput {
   class_nbr?: string;
   subject_catalog_nbr?: string;
   class_section?: string;
+  instructor?: string;
 }

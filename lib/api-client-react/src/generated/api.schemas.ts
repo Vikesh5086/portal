@@ -42,6 +42,8 @@ export interface Course {
   /** @nullable */
   subject_catalog_nbr?: string | null;
   class_section?: string;
+  /** @nullable */
+  instructor?: string | null;
 }
 
 export interface CourseInput {
@@ -50,6 +52,7 @@ export interface CourseInput {
   class_nbr?: string;
   subject_catalog_nbr?: string;
   class_section?: string;
+  instructor?: string;
 }
 
 export interface Assignment {
