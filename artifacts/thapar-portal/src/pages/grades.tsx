@@ -36,7 +36,7 @@ export default function Grades() {
   const thStyle = (extra?: React.CSSProperties): React.CSSProperties => ({
     padding: "5px 8px",
     textAlign: "left",
-    color: "#cc6600",
+    color: "#2a5db0",
     fontWeight: "normal",
     borderRight: "1px solid #cccccc",
     borderBottom: "1px solid #cccccc",

@@ -318,7 +318,7 @@ function AssignmentsTab() {
                 <div>
                   <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Category</label>
                   <select style={inp} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                    {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Assignment"].map(c => <option key={c}>{c}</option>)}
+                    {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Session", "Makeup", "Assignment"].map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
@@ -439,7 +439,7 @@ function MarksTab() {
                     <div>
                       <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Category</label>
                       <select style={inp} value={newAssign.category} onChange={e => setNewAssign({ ...newAssign, category: e.target.value })}>
-                        {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Assignment"].map(c => <option key={c}>{c}</option>)}
+                        {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Session", "Makeup", "Assignment"].map(c => <option key={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>

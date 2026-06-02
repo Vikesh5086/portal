@@ -101,11 +101,11 @@ export default function Assignments() {
             <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13, fontFamily: "Arial, sans-serif" }}>
               <thead>
                 <tr style={{ background: "#fff" }}>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Course Title</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Course ID</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Class Nbr</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Subject Catalog Nbr</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Class Section</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#2a5db0", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Course Title</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#2a5db0", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Course ID</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#2a5db0", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Class Nbr</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#2a5db0", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Subject Catalog Nbr</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#2a5db0", fontWeight: "normal", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Class Section</th>
                 </tr>
               </thead>
               <tbody>
