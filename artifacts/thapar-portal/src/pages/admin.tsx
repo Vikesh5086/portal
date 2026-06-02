@@ -351,6 +351,9 @@ function MarksTab() {
   const [inputs, setInputs] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newAssign, setNewAssign] = useState({ assignment_name: "", category: "MST", max_marks: "30", begin_date: "", due_date: "" });
+  const [addingAssign, setAddingAssign] = useState(false);
 
   useEffect(() => { apiFetch("/admin/courses").then(setCourses); }, []);
 
@@ -363,10 +366,25 @@ function MarksTab() {
       const key = `${m.student_college_id}_${m.assignment_id}`;
       init[key] = m.marks_obtained !== null && m.marks_obtained !== undefined ? String(m.marks_obtained) : "";
     });
-    setInputs(init);
+    setInputs(prev => ({ ...init, ...Object.fromEntries(Object.entries(prev).filter(([k]) => !init[k] && prev[k])) }));
   }, []);
 
-  useEffect(() => { loadGrid(selectedCourseId); }, [selectedCourseId, loadGrid]);
+  useEffect(() => { loadGrid(selectedCourseId); setShowAddForm(false); }, [selectedCourseId, loadGrid]);
+
+  const addAssignment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingAssign(true);
+    try {
+      await apiFetch("/admin/assignment", {
+        method: "POST",
+        body: JSON.stringify({ ...newAssign, course_id: parseInt(selectedCourseId), max_marks: parseFloat(newAssign.max_marks) }),
+      });
+      setNewAssign({ assignment_name: "", category: "MST", max_marks: "30", begin_date: "", due_date: "" });
+      setShowAddForm(false);
+      setMsg("✓ Assignment added!");
+      await loadGrid(selectedCourseId);
+    } catch { setMsg("Error adding assignment"); } finally { setAddingAssign(false); }
+  };
 
   const save = async () => {
     if (!grid) return;
@@ -401,60 +419,109 @@ function MarksTab() {
 
       {msg && <div style={{ background: msg.includes("✓") ? "#e6ffe6" : "#ffe6e6", border: "1px solid #aaa", padding: "8px 14px", marginBottom: 14, fontSize: 13 }}>{msg}</div>}
 
-      {grid && grid.assignments.length === 0 && (
-        <div style={{ color: "#888", fontSize: 13 }}>No assignments found for this subject. Add assignments first.</div>
-      )}
-
-      {grid && grid.assignments.length > 0 && (
+      {selectedCourseId && grid && (
         <>
-          <div style={{ overflowX: "auto", marginBottom: 16 }}>
-            <table style={{ ...tbl, minWidth: 600 }}>
-              <thead>
-                <tr>
-                  <th style={{ ...th, minWidth: 80 }}>Roll No.</th>
-                  <th style={{ ...th, minWidth: 160 }}>Student Name</th>
-                  {grid.assignments.map(a => (
-                    <th key={a.id} style={{ ...th, minWidth: 90, textAlign: "center" }}>
-                      <div>{a.assignment_name}</div>
-                      <div style={{ fontSize: 11, fontWeight: "normal", color: "#888" }}>Max: {a.max_marks}</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {grid.students.map((s, si) => (
-                  <tr key={s.college_id} style={{ background: si % 2 === 0 ? "#fff" : "#f9f9f9" }}>
-                    <td style={td}>{s.college_id}</td>
-                    <td style={td}>{s.name}</td>
-                    {grid.assignments.map(a => {
-                      const key = `${s.college_id}_${a.id}`;
-                      return (
-                        <td key={a.id} style={{ ...td, textAlign: "center" }}>
-                          <input
-                            type="number"
-                            min={0}
-                            max={a.max_marks}
-                            step={0.5}
-                            value={inputs[key] ?? ""}
-                            onChange={e => setInputs(prev => ({ ...prev, [key]: e.target.value }))}
-                            style={{ width: 70, border: "1px solid #bbb", padding: "3px 6px", fontSize: 13, textAlign: "right" }}
-                            placeholder="—"
-                          />
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-                {grid.students.length === 0 && (
-                  <tr><td colSpan={2 + grid.assignments.length} style={{ ...td, textAlign: "center", color: "#888" }}>No students enrolled in this subject</td></tr>
-                )}
-              </tbody>
-            </table>
+          {/* Add Assignment button + inline form */}
+          <div style={{ marginBottom: 16 }}>
+            {!showAddForm ? (
+              <button onClick={() => setShowAddForm(true)} style={{ ...btn("#1a5276"), padding: "5px 14px", fontSize: 13 }}>
+                + Add New Assignment
+              </button>
+            ) : (
+              <div style={{ border: "1px solid #bbb", padding: 16, background: "#f9f9ff", marginTop: 8 }}>
+                <div style={{ fontWeight: "bold", fontSize: 14, marginBottom: 12 }}>New Assignment</div>
+                <form onSubmit={addAssignment}>
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Assignment Name</label>
+                      <input style={inp} value={newAssign.assignment_name} onChange={e => setNewAssign({ ...newAssign, assignment_name: e.target.value })} required placeholder="e.g. mst" />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Category</label>
+                      <select style={inp} value={newAssign.category} onChange={e => setNewAssign({ ...newAssign, category: e.target.value })}>
+                        {["MST", "EST", "Quiz 1", "Quiz 2", "TUT1", "Assignment"].map(c => <option key={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Out of (Max Marks)</label>
+                      <input style={inp} type="number" value={newAssign.max_marks} onChange={e => setNewAssign({ ...newAssign, max_marks: e.target.value })} required min={1} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Begin Date</label>
+                      <input style={inp} value={newAssign.begin_date} onChange={e => setNewAssign({ ...newAssign, begin_date: e.target.value })} placeholder="MM/DD/YYYY" />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, display: "block", marginBottom: 3 }}>Due Date</label>
+                      <input style={inp} value={newAssign.due_date} onChange={e => setNewAssign({ ...newAssign, due_date: e.target.value })} placeholder="MM/DD/YYYY" />
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="submit" disabled={addingAssign} style={{ ...btn("#1a7a1a"), padding: "6px 16px" }}>
+                      {addingAssign ? "Adding..." : "Add Assignment"}
+                    </button>
+                    <button type="button" onClick={() => setShowAddForm(false)} style={{ ...btn("#888"), padding: "6px 14px" }}>Cancel</button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
 
-          <button onClick={save} disabled={saving} style={{ ...btn("#1a7a1a"), padding: "8px 24px", fontSize: 14 }}>
-            {saving ? "Saving..." : "Save All Marks"}
-          </button>
+          {grid.assignments.length === 0 ? (
+            <div style={{ color: "#888", fontSize: 13, padding: "16px 0" }}>
+              No assignments yet for this subject. Use "+ Add New Assignment" above to create one, then enter marks below.
+            </div>
+          ) : (
+            <>
+              <div style={{ overflowX: "auto", marginBottom: 16 }}>
+                <table style={{ ...tbl, minWidth: 600 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ ...th, minWidth: 80 }}>Roll No.</th>
+                      <th style={{ ...th, minWidth: 160 }}>Student Name</th>
+                      {grid.assignments.map(a => (
+                        <th key={a.id} style={{ ...th, minWidth: 100, textAlign: "center" }}>
+                          <div style={{ whiteSpace: "nowrap" }}>{a.assignment_name}</div>
+                          <div style={{ fontSize: 11, fontWeight: "normal", color: "#666" }}>{a.category} / {a.max_marks}</div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {grid.students.map((s, si) => (
+                      <tr key={s.college_id} style={{ background: si % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                        <td style={td}>{s.college_id}</td>
+                        <td style={td}>{s.name}</td>
+                        {grid.assignments.map(a => {
+                          const key = `${s.college_id}_${a.id}`;
+                          return (
+                            <td key={a.id} style={{ ...td, textAlign: "center" }}>
+                              <input
+                                type="number"
+                                min={0}
+                                max={a.max_marks}
+                                step={0.5}
+                                value={inputs[key] ?? ""}
+                                onChange={e => setInputs(prev => ({ ...prev, [key]: e.target.value }))}
+                                style={{ width: 70, border: "1px solid #bbb", padding: "3px 6px", fontSize: 13, textAlign: "right" }}
+                                placeholder="—"
+                              />
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                    {grid.students.length === 0 && (
+                      <tr><td colSpan={2 + grid.assignments.length} style={{ ...td, textAlign: "center", color: "#888" }}>No students enrolled in this subject</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <button onClick={save} disabled={saving} style={{ ...btn("#1a7a1a"), padding: "8px 24px", fontSize: 14 }}>
+                {saving ? "Saving..." : "Save All Marks"}
+              </button>
+            </>
+          )}
         </>
       )}
     </div>

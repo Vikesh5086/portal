@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export default function Login() {
   const [collegeId, setCollegeId] = useState("");
@@ -12,102 +9,143 @@ export default function Login() {
   const [error, setError] = useState("");
   const [, setLocation] = useLocation();
   const { login } = useAuth();
-  
   const loginMutation = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
     try {
-      const user = await loginMutation.mutateAsync({
-        data: { college_id: collegeId, password }
-      });
+      const user = await loginMutation.mutateAsync({ data: { college_id: collegeId, password } });
       login(user);
       if (user.role === "admin" || user.role === "teacher") {
         setLocation("/admin");
       } else {
         setLocation("/homepage");
       }
-    } catch (err) {
+    } catch {
       setError("Invalid User ID or Password");
     }
   };
 
+  const inp: React.CSSProperties = {
+    width: "100%",
+    border: "1px solid #bbb",
+    padding: "8px 10px",
+    fontSize: 14,
+    fontFamily: "Arial, sans-serif",
+    background: "rgba(255,255,255,0.7)",
+    boxSizing: "border-box",
+    outline: "none",
+  };
+
   return (
-    <div className="min-h-screen flex">
-      {/* Left Column */}
-      <div className="w-1/2 relative flex items-center justify-center">
-        <div className="absolute inset-0 z-0">
-          <img src="/campus.jpg" alt="Campus" className="w-full h-full object-cover" />
-        </div>
-        
-        {/* Login Card */}
-        <div className="relative z-10 bg-white p-8 w-full max-w-md shadow-lg border border-gray-200">
-          <div className="mb-6 flex flex-col items-center">
-            <img src="/ti-logo.png" alt="Thapar Institute Logo" className="w-52 mb-1" />
+    <div style={{ minHeight: "100vh", fontFamily: "Arial, sans-serif", display: "flex", flexDirection: "column" }}>
+      {/* Redwood strip at very top */}
+      <div style={{
+        height: 6,
+        backgroundImage: "url('/redwood-strip.png')",
+        backgroundRepeat: "repeat-x",
+        backgroundSize: "auto 6px",
+        width: "100%",
+        flexShrink: 0,
+      }} />
+
+      {/* Full-screen campus background */}
+      <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
+        <img src="/campus.jpg" alt="Campus" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+
+      {/* Centered card */}
+      <div style={{
+        flex: 1,
+        position: "relative",
+        zIndex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 16px 60px",
+      }}>
+        <div style={{
+          background: "rgba(255,255,255,0.88)",
+          padding: "36px 44px 32px",
+          width: 480,
+          maxWidth: "92vw",
+          border: "1px solid rgba(180,180,180,0.6)",
+        }}>
+          {/* Logo */}
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <img src="/ti-logo.png" alt="Thapar Institute Logo" style={{ width: 200, height: "auto" }} />
           </div>
-          
+
           {error && (
-            <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm text-center border border-red-200">
+            <div style={{ marginBottom: 14, padding: "6px 10px", background: "rgba(255,220,220,0.9)", color: "#cc0000", fontSize: 13, border: "1px solid #e8a0a0", textAlign: "center" }}>
               {error}
             </div>
           )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="collegeId">User ID</Label>
-              <Input 
-                id="collegeId" 
-                type="text" 
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", fontSize: 14, marginBottom: 5, color: "#333" }}>User ID</label>
+              <input
+                type="text"
                 value={collegeId}
-                onChange={(e) => setCollegeId(e.target.value)}
-                className="w-full rounded-none"
+                onChange={e => setCollegeId(e.target.value)}
+                style={inp}
                 required
+                autoComplete="username"
               />
             </div>
-            
-            <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: 14, marginBottom: 5, color: "#333" }}>Password</label>
+              <input
+                type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-none"
+                onChange={e => setPassword(e.target.value)}
+                style={inp}
                 required
+                autoComplete="current-password"
               />
             </div>
-            
-            <div className="pt-2">
-              <Button 
-                type="submit" 
-                className="w-full bg-[#333333] hover:bg-[#222222] text-white rounded-none h-10"
-                disabled={loginMutation.isPending}
-              >
-                {loginMutation.isPending ? "Signing In..." : "Sign In"}
-              </Button>
-            </div>
-            
-            <div className="text-center pt-2">
-              <a href="#" className="text-[#0066cc] text-sm hover:underline">
-                Forgot Password
-              </a>
+
+            <button
+              type="submit"
+              disabled={loginMutation.isPending}
+              style={{
+                width: "100%",
+                background: "#2d2d2d",
+                color: "#fff",
+                border: "none",
+                padding: "10px 0",
+                fontSize: 15,
+                cursor: loginMutation.isPending ? "not-allowed" : "pointer",
+                fontFamily: "Arial, sans-serif",
+                fontWeight: "bold",
+              }}
+            >
+              {loginMutation.isPending ? "Signing In..." : "Sign In"}
+            </button>
+
+            <div style={{ textAlign: "center", marginTop: 14 }}>
+              <a href="#" style={{ color: "#0066cc", fontSize: 13, textDecoration: "none" }}>Forgot Password</a>
             </div>
           </form>
         </div>
       </div>
-      
-      {/* Right Column */}
-      <div className="w-1/2 relative hidden md:block">
-        <div className="absolute inset-0 z-0">
-          <img src="/campus.jpg" alt="Campus" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#8B0000] opacity-60"></div>
-        </div>
-      </div>
-      
+
       {/* Footer */}
-      <div className="fixed bottom-0 left-0 w-full p-2 bg-white/80 backdrop-blur text-xs text-gray-600 text-center z-20">
+      <div style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        width: "100%",
+        padding: "6px 0",
+        background: "rgba(255,255,255,0.75)",
+        textAlign: "center",
+        fontSize: 12,
+        color: "#555",
+        zIndex: 2,
+      }}>
         Copyright 2000, 2022, Oracle and its affiliates
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation, useParams } from "wouter";
-import { NavHeader, MosaicBanner } from "./homepage";
+import { NavHeader } from "./homepage";
 import { BreadcrumbBar, PageHeader } from "./assignments";
 import { useGetStudentCourseGrades } from "@workspace/api-client-react";
 import { useEffect, useState } from "react";
@@ -50,9 +50,8 @@ export default function Grades() {
       <style>{`.group:hover > div { display: block !important; }`}</style>
       <BreadcrumbBar path="View My Assignments" />
       <NavHeader variant="student" />
-      <MosaicBanner />
 
-      <main style={{ marginLeft: 12, marginTop: 16, marginRight: 16, maxWidth: 650, background: "#fff", padding: 20, border: "1px solid #d6d6d6" }}>
+      <main style={{ marginLeft: 12, marginTop: 16, marginRight: 16, maxWidth: 680, background: "#fff", padding: 20, border: "1px solid #d6d6d6" }}>
         <PageHeader title="View Assignments and Grades" subtitle="Class Grades" />
 
         {isLoading ? (
@@ -111,7 +110,7 @@ export default function Grades() {
 
             {/* Grades box */}
             <div style={{ background: "#ffffff", border: "1px solid #d6d6d6", padding: "12px 16px", marginBottom: 16 }}>
-              <div style={{ color: "#cc0000", fontWeight: "bold", fontSize: 14, marginBottom: 10 }}>Grades</div>
+              <div style={{ color: "#cc6600", fontWeight: "bold", fontSize: 14, marginBottom: 10 }}>Grades</div>
               <table style={{ fontSize: 13, borderCollapse: "collapse", marginLeft: "auto" }}>
                 <tbody>
                   <tr>

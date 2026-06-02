@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation } from "wouter";
-import { NavHeader, MosaicBanner } from "./homepage";
+import { NavHeader } from "./homepage";
 import { useGetStudentCourses } from "@workspace/api-client-react";
 import { useEffect } from "react";
 
@@ -90,9 +90,8 @@ export default function Assignments() {
       <style>{`.group:hover > div { display: block !important; }`}</style>
       <BreadcrumbBar path="View My Assignments" />
       <NavHeader variant="student" />
-      <MosaicBanner />
 
-      <main style={{ marginLeft: 12, marginTop: 16, marginRight: 16, maxWidth: 650, background: "#fff", padding: 20, border: "1px solid #d6d6d6" }}>
+      <main style={{ marginLeft: 12, marginTop: 16, marginRight: 16, maxWidth: 680, background: "#fff", padding: 20, border: "1px solid #d6d6d6" }}>
         <PageHeader title="View Assignments and Grades" subtitle="View Assignments and Grades" />
 
         {isLoading ? (
@@ -102,11 +101,11 @@ export default function Assignments() {
             <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13, fontFamily: "Arial, sans-serif" }}>
               <thead>
                 <tr style={{ background: "#fff" }}>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Course Title</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Course ID</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Class Nbr</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc" }}>Subject Catalog Nbr</th>
-                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderBottom: "1px solid #cccccc" }}>Class Section</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Course Title</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Course ID</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Class Nbr</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderRight: "1px solid #cccccc", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Subject Catalog Nbr</th>
+                  <th style={{ padding: "5px 8px", textAlign: "left", color: "#cc6600", fontWeight: "normal", borderBottom: "1px solid #cccccc", whiteSpace: "nowrap" }}>Class Section</th>
                 </tr>
               </thead>
               <tbody>
