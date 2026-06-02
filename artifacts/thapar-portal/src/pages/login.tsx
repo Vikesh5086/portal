@@ -27,124 +27,144 @@ export default function Login() {
     }
   };
 
-  const inp: React.CSSProperties = {
-    width: "100%",
-    border: "1px solid #bbb",
-    padding: "8px 10px",
-    fontSize: 14,
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 13,
+    marginBottom: 4,
+    color: "#333",
     fontFamily: "Arial, sans-serif",
-    background: "rgba(255,255,255,0.7)",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    border: "1px solid #ccc",
+    padding: "7px 9px",
+    fontSize: 13,
+    fontFamily: "Arial, sans-serif",
+    background: "#fff",
     boxSizing: "border-box",
     outline: "none",
   };
 
   return (
-    <div style={{ minHeight: "100vh", fontFamily: "Arial, sans-serif", display: "flex", flexDirection: "column" }}>
-      {/* Redwood strip at very top */}
-      <div style={{
-        height: 6,
-        backgroundImage: "url('/redwood-strip.png')",
-        backgroundRepeat: "repeat-x",
-        backgroundSize: "auto 6px",
-        width: "100%",
-        flexShrink: 0,
-      }} />
-
-      {/* Full-screen campus background */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
-        <img src="/campus.jpg" alt="Campus" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      </div>
-
-      {/* Centered card */}
-      <div style={{
-        flex: 1,
-        position: "relative",
-        zIndex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 16px 60px",
-      }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "Arial, sans-serif" }}>
+      {/* Split layout */}
+      <div style={{ flex: 1, display: "flex" }}>
+        {/* LEFT HALF — campus bg + login card */}
         <div style={{
-          background: "rgba(255,255,255,0.88)",
-          padding: "36px 44px 32px",
-          width: 480,
-          maxWidth: "92vw",
-          border: "1px solid rgba(180,180,180,0.6)",
+          width: "50%",
+          position: "relative",
+          backgroundImage: "url('/campus.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+          padding: "48px 0 48px 48px",
         }}>
-          {/* Logo */}
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <img src="/ti-logo.png" alt="Thapar Institute Logo" style={{ width: 200, height: "auto" }} />
+          {/* Light white wash over left campus image */}
+          <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.18)" }} />
+
+          {/* Login Card */}
+          <div style={{
+            position: "relative",
+            zIndex: 1,
+            background: "#fff",
+            width: 320,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
+          }}>
+            {/* Redwood strip at very top of card */}
+            <div style={{
+              height: 6,
+              backgroundImage: "url('/redwood-strip.png')",
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "auto 6px",
+              width: "100%",
+            }} />
+
+            <div style={{ padding: "24px 28px 28px" }}>
+              {/* Logo */}
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <img src="/ti-logo.png" alt="Thapar Institute" style={{ width: 170, height: "auto" }} />
+              </div>
+
+              {error && (
+                <div style={{ marginBottom: 12, padding: "5px 8px", background: "#ffe8e8", color: "#cc0000", fontSize: 12, border: "1px solid #e8a0a0", textAlign: "center" }}>
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={labelStyle}>User ID</label>
+                  <input
+                    type="text"
+                    value={collegeId}
+                    onChange={e => setCollegeId(e.target.value)}
+                    style={inputStyle}
+                    required
+                    autoComplete="username"
+                  />
+                </div>
+
+                <div style={{ marginBottom: 18 }}>
+                  <label style={labelStyle}>Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    style={inputStyle}
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loginMutation.isPending}
+                  style={{
+                    width: "100%",
+                    background: "#2d2d2d",
+                    color: "#fff",
+                    border: "none",
+                    padding: "9px 0",
+                    fontSize: 14,
+                    cursor: loginMutation.isPending ? "not-allowed" : "pointer",
+                    fontFamily: "Arial, sans-serif",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                </button>
+
+                <div style={{ textAlign: "center", marginTop: 12 }}>
+                  <a href="#" style={{ color: "#0066cc", fontSize: 13, textDecoration: "none" }}>Forgot Password</a>
+                </div>
+              </form>
+            </div>
           </div>
+        </div>
 
-          {error && (
-            <div style={{ marginBottom: 14, padding: "6px 10px", background: "rgba(255,220,220,0.9)", color: "#cc0000", fontSize: 13, border: "1px solid #e8a0a0", textAlign: "center" }}>
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: "block", fontSize: 14, marginBottom: 5, color: "#333" }}>User ID</label>
-              <input
-                type="text"
-                value={collegeId}
-                onChange={e => setCollegeId(e.target.value)}
-                style={inp}
-                required
-                autoComplete="username"
-              />
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 14, marginBottom: 5, color: "#333" }}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                style={inp}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loginMutation.isPending}
-              style={{
-                width: "100%",
-                background: "#2d2d2d",
-                color: "#fff",
-                border: "none",
-                padding: "10px 0",
-                fontSize: 15,
-                cursor: loginMutation.isPending ? "not-allowed" : "pointer",
-                fontFamily: "Arial, sans-serif",
-                fontWeight: "bold",
-              }}
-            >
-              {loginMutation.isPending ? "Signing In..." : "Sign In"}
-            </button>
-
-            <div style={{ textAlign: "center", marginTop: 14 }}>
-              <a href="#" style={{ color: "#0066cc", fontSize: 13, textDecoration: "none" }}>Forgot Password</a>
-            </div>
-          </form>
+        {/* RIGHT HALF — campus bg with red overlay */}
+        <div style={{
+          width: "50%",
+          position: "relative",
+          backgroundImage: "url('/campus.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(139,0,0,0.60)" }} />
         </div>
       </div>
 
       {/* Footer */}
       <div style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        width: "100%",
-        padding: "6px 0",
-        background: "rgba(255,255,255,0.75)",
+        background: "rgba(255,255,255,0.9)",
         textAlign: "center",
         fontSize: 12,
         color: "#555",
-        zIndex: 2,
+        padding: "5px 0",
+        borderTop: "1px solid #e0e0e0",
       }}>
         Copyright 2000, 2022, Oracle and its affiliates
       </div>
