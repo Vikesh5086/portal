@@ -24,7 +24,11 @@ export default function Login() {
         data: { college_id: collegeId, password }
       });
       login(user);
-      setLocation("/homepage");
+      if (user.role === "admin" || user.role === "teacher") {
+        setLocation("/admin");
+      } else {
+        setLocation("/homepage");
+      }
     } catch (err) {
       setError("Invalid User ID or Password");
     }
