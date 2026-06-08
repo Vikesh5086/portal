@@ -38,10 +38,4 @@ router.get("/student/course/:courseId/grades", requireStudent, async (req: any, 
   res.json({ course, assignments, midterm_grade: Math.round(midtermGrade * 100) / 100, overall_grade: Math.round(overallGrade * 100) / 100 });
 });
 
-router.get("/student/course/:courseId/grade", requireStudent, async (req: any, res) => {
-  const db = getDb();
-  const result = await db.execute({ sql: "SELECT * FROM student_grades WHERE student_college_id = ? AND course_id = ?", args: [req.session.user.college_id, parseInt(req.params.courseId)] });
-  res.json(result.rows[0] ?? {});
-});
-
 export default router;
