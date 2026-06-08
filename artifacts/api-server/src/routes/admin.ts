@@ -22,7 +22,7 @@ router.post("/admin/student", requireAdmin, async (req, res) => {
   const { college_id, password, name } = parsed.data;
   const db = getDb();
   const result = await db.execute({ sql: "INSERT INTO users (college_id, password, name, role) VALUES (?, ?, ?, 'student')", args: [college_id, password, name] });
-  res.status(201).json({ id: result.lastInsertRowid, college_id, name, role: "student" });
+  res.status(201).json({ id: Number(result.lastInsertRowid), college_id, name, role: "student" });
 });
 
 router.delete("/admin/students/:collegeId", requireAdmin, async (req, res) => {
@@ -51,7 +51,7 @@ router.post("/admin/course", requireAdmin, async (req, res) => {
   const { course_title, course_id, class_nbr, subject_catalog_nbr, class_section, instructor } = parsed.data;
   const db = getDb();
   const result = await db.execute({ sql: "INSERT INTO courses (course_title, course_id, class_nbr, subject_catalog_nbr, class_section, instructor) VALUES (?, ?, ?, ?, ?, ?)", args: [course_title, course_id, class_nbr ?? null, subject_catalog_nbr ?? null, class_section ?? "1R1", instructor ?? ""] });
-  res.status(201).json({ id: result.lastInsertRowid, course_title, course_id, class_nbr, subject_catalog_nbr, class_section: class_section ?? "1R1", instructor: instructor ?? "" });
+  res.status(201).json({ id: Number(result.lastInsertRowid), course_title, course_id, class_nbr, subject_catalog_nbr, class_section: class_section ?? "1R1", instructor: instructor ?? "" });
 });
 
 router.delete("/admin/courses/:courseId", requireAdmin, async (req, res) => {
@@ -90,7 +90,7 @@ router.post("/admin/enroll", requireAdmin, async (req, res) => {
   const existing = await db.execute({ sql: "SELECT id FROM student_courses WHERE student_college_id = ? AND course_id = ?", args: [student_college_id, course_id] });
   if (existing.rows.length > 0) { res.status(200).json({ message: "Already enrolled" }); return; }
   const result = await db.execute({ sql: "INSERT INTO student_courses (student_college_id, course_id) VALUES (?, ?)", args: [student_college_id, course_id] });
-  res.status(201).json({ id: result.lastInsertRowid });
+  res.status(201).json({ id: Number(result.lastInsertRowid) });
 });
 
 router.delete("/admin/enroll", requireAdmin, async (req, res) => {
@@ -112,7 +112,7 @@ router.post("/admin/assignment", requireAdmin, async (req, res) => {
   const { course_id, assignment_name, category, begin_date, due_date, max_marks } = parsed.data;
   const db = getDb();
   const result = await db.execute({ sql: "INSERT INTO assignments (course_id, assignment_name, category, begin_date, due_date, max_marks) VALUES (?, ?, ?, ?, ?, ?)", args: [course_id, assignment_name, category, begin_date ?? null, due_date ?? null, max_marks] });
-  res.status(201).json({ id: result.lastInsertRowid, course_id, assignment_name, category, begin_date, due_date, max_marks });
+  res.status(201).json({ id: Number(result.lastInsertRowid), course_id, assignment_name, category, begin_date, due_date, max_marks });
 });
 
 router.post("/admin/marks", requireAdmin, async (req, res) => {
@@ -159,6 +159,21 @@ router.post("/admin/marks/batch", requireAdmin, async (req, res) => {
     }
   }
   res.json({ message: "Marks saved" });
+});
+
+router.get("/admin/grades/:courseId", requireAdmin, async (req, res) => {
+  const db = getDb();
+  const result = await db.execute({ sql: "SELECT * FROM student_grades WHERE course_id = ?", args: [parseInt(req.params.courseId, 10)] });
+  res.json(result.rows);
+});
+
+router.post("/admin/grades", requireAdmin, async (req, res) => {
+  const { student_college_id, course_id, letter_grade, credits } = req.body;
+  const gradePoints: Record<string, number> = { "A+": 10, "A": 10, "A-": 9, "B": 8, "B-": 7, "C": 6, "E": 2, "F": 0 };
+  const grade_points = gradePoints[letter_grade] ?? null;
+  const db = getDb();
+  await db.execute({ sql: `INSERT INTO student_grades (student_college_id, course_id, letter_grade, credits, grade_points) VALUES (?, ?, ?, ?, ?) ON CONFLICT(student_college_id, course_id) DO UPDATE SET letter_grade=excluded.letter_grade, credits=excluded.credits, grade_points=excluded.grade_points`, args: [student_college_id, course_id, letter_grade, credits, grade_points] });
+  res.json({ message: "Grade saved" });
 });
 
 export default router;
