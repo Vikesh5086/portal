@@ -18,6 +18,9 @@ export default function Grades() {
   const { data: gradesData, isLoading } = useGetStudentCourseGrades(courseId);
   const [classExpanded, setClassExpanded] = useState(true);
   const [assignmentsExpanded, setAssignmentsExpanded] = useState(true);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
+  const [datesExpanded, setDatesExpanded] = useState(false);
   const [letterGrade, setLetterGrade] = useState<string | null>(null);
 
   useEffect(() => { if (!user) setLocation("/"); }, [user, setLocation]);
@@ -43,6 +46,19 @@ export default function Grades() {
     fontSize: 13, fontFamily: "Arial, sans-serif", ...extra,
   });
 
+  // Assignment categories calculate karo
+  const categoryMap: Record<string, { weight: number; total: number; obtained: number }> = {};
+  if (gradesData?.assignments) {
+    for (const a of gradesData.assignments) {
+      if (!categoryMap[a.category]) categoryMap[a.category] = { weight: a.max_marks, total: a.max_marks, obtained: 0 };
+      else categoryMap[a.category].weight += a.max_marks;
+      if (a.marks_obtained !== null && a.marks_obtained !== undefined) {
+        categoryMap[a.category].obtained += a.marks_obtained;
+      }
+      categoryMap[a.category].total = categoryMap[a.category].weight;
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "Arial, sans-serif" }}>
       <style>{`.group:hover > div { display: block !important; }`}</style>
@@ -60,6 +76,8 @@ export default function Grades() {
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
               <button style={{ background: "#f0e68c", border: "1px solid #999", padding: "3px 16px", fontSize: 12, cursor: "pointer" }}>Change Class</button>
             </div>
+
+            {/* Class info box */}
             <div style={{ border: "1px solid #ccc", marginBottom: 16, fontSize: 13 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", cursor: "pointer", borderBottom: classExpanded ? "1px solid #ccc" : "none" }} onClick={() => setClassExpanded(!classExpanded)}>
                 <span style={{ color: "#008000", fontSize: 16 }}>{classExpanded ? "▼" : "▶"}</span>
@@ -81,7 +99,7 @@ export default function Grades() {
                       <tr>
                         <td style={{ ...tdStyle(), borderLeft: "1px solid #cccccc" }}>Tu 07:00-08:00</td>
                         <td style={tdStyle()}>TBA</td>
-                        <td style={tdStyle()}>{gradesData.course.instructor || ""}</td>
+                        <td style={tdStyle()}>{(gradesData.course as any).instructor || ""}</td>
                         <td style={{ ...tdStyle(), borderRight: "1px solid #cccccc" }}>06/01/2026 - 07/01/2026</td>
                       </tr>
                     </tbody>
@@ -90,9 +108,9 @@ export default function Grades() {
               )}
             </div>
 
-            {/* Grades box */}
-            <div style={{ background: "#fdf5e6", border: "1px solid #d6d6d6", padding: "12px 16px", marginBottom: 16 }}>
-              <div style={{ color: "#cc0000", fontWeight: "bold", fontSize: 14, marginBottom: 10 }}>Grades</div>
+            {/* Grades box — white background */}
+            <div style={{ background: "#ffffff", border: "1px solid #d6d6d6", padding: "12px 16px", marginBottom: 16 }}>
+              <div style={{ color: "#cc6600", fontWeight: "bold", fontSize: 14, marginBottom: 10 }}>Grades</div>
               <table style={{ fontSize: 13, borderCollapse: "collapse" }}>
                 <tbody>
                   <tr>
@@ -111,13 +129,14 @@ export default function Grades() {
               </table>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
+            {/* Class Assignments */}
+            <div style={{ marginBottom: 4 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ccc", cursor: "pointer", marginBottom: 4 }} onClick={() => setAssignmentsExpanded(!assignmentsExpanded)}>
                 <span style={{ color: "#008000", fontSize: 16 }}>{assignmentsExpanded ? "▼" : "▶"}</span>
                 <span style={{ fontSize: 13 }}>Class Assignments</span>
               </div>
               {assignmentsExpanded && (
-                <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13, marginBottom: 4 }}>
                   <thead>
                     <tr>
                       <th style={thStyle({ borderLeft: "1px solid #cccccc" })}>Begin Date</th>
@@ -146,11 +165,96 @@ export default function Grades() {
                 </table>
               )}
             </div>
-            {["Assignment Categories", "Instructor Comments", "Student Assignment Dates"].map(label => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ccc", cursor: "pointer", marginBottom: 4, fontSize: 13 }}>
-                <span style={{ color: "#888", fontSize: 14 }}>▶</span><span>{label}</span>
+
+            {/* Assignment Categories */}
+            <div style={{ marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ccc", cursor: "pointer", marginBottom: 4, background: categoriesExpanded ? "#f0f0f0" : "#fff" }} onClick={() => setCategoriesExpanded(!categoriesExpanded)}>
+                <span style={{ color: "#008000", fontSize: 16 }}>{categoriesExpanded ? "▼" : "▶"}</span>
+                <span style={{ fontSize: 13 }}>Assignment Categories</span>
               </div>
-            ))}
+              {categoriesExpanded && (
+                <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13, marginBottom: 4 }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle({ borderLeft: "1px solid #cccccc" })}>Category</th>
+                      <th style={{ ...thStyle(), textAlign: "right" }}>Weight %</th>
+                      <th style={{ ...thStyle(), textAlign: "right" }}>Category Total</th>
+                      <th style={{ ...thStyle(), textAlign: "right" }}>Out of</th>
+                      <th style={{ ...thStyle(), textAlign: "right", borderRight: "1px solid #cccccc" }}>Category Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(categoryMap).map(([cat, data], idx) => (
+                      <tr key={cat} style={{ background: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                        <td style={{ ...tdStyle(), borderLeft: "1px solid #cccccc" }}>{cat}</td>
+                        <td style={{ ...tdStyle(), textAlign: "right" }}>{data.weight}</td>
+                        <td style={{ ...tdStyle(), textAlign: "right" }}>{fmt(data.obtained)}</td>
+                        <td style={{ ...tdStyle(), textAlign: "right" }}>{fmt(data.total)}</td>
+                        <td style={{ ...tdStyle(), textAlign: "right", borderRight: "1px solid #cccccc" }}>
+                          {data.total > 0 ? fmt((data.obtained / data.total) * 100) : ""}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Instructor Comments */}
+            <div style={{ marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ccc", cursor: "pointer", marginBottom: 4, background: commentsExpanded ? "#f0f0f0" : "#fff" }} onClick={() => setCommentsExpanded(!commentsExpanded)}>
+                <span style={{ color: "#008000", fontSize: 16 }}>{commentsExpanded ? "▼" : "▶"}</span>
+                <span style={{ fontSize: 13 }}>Instructor Comments</span>
+              </div>
+              {commentsExpanded && (
+                <div style={{ border: "1px solid #cccccc", padding: "10px 16px", fontSize: 13, marginBottom: 4 }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr><th style={thStyle({ borderLeft: "1px solid #cccccc", borderRight: "1px solid #cccccc" })}>Comments</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td style={{ ...tdStyle(), borderLeft: "1px solid #cccccc", borderRight: "1px solid #cccccc", color: "#666" }}>No instructor comments found.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Student Assignment Dates */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", border: "1px solid #ccc", cursor: "pointer", marginBottom: 4, background: datesExpanded ? "#f0f0f0" : "#fff" }} onClick={() => setDatesExpanded(!datesExpanded)}>
+                <span style={{ color: "#008000", fontSize: 16 }}>{datesExpanded ? "▼" : "▶"}</span>
+                <span style={{ fontSize: 13 }}>Student Assignment Dates</span>
+              </div>
+              {datesExpanded && (
+                <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #cccccc", fontSize: 13, marginBottom: 4 }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle({ borderLeft: "1px solid #cccccc" })}>Begin Date</th>
+                      <th style={thStyle()}>Due Date</th>
+                      <th style={thStyle()}>Description</th>
+                      <th style={thStyle()}>Date Rec'd</th>
+                      <th style={{ ...thStyle(), textAlign: "right" }}>Grade</th>
+                      <th style={thStyle()}>Last Updated</th>
+                      <th style={{ ...thStyle(), borderRight: "1px solid #cccccc" }}>Explanation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gradesData.assignments.map((a, idx) => (
+                      <tr key={a.id} style={{ background: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                        <td style={{ ...tdStyle(), borderLeft: "1px solid #cccccc" }}>{a.begin_date || ""}</td>
+                        <td style={tdStyle()}>{a.due_date || ""}</td>
+                        <td style={tdStyle()}>{a.assignment_name}</td>
+                        <td style={tdStyle()}>{a.begin_date || ""}</td>
+                        <td style={{ ...tdStyle(), textAlign: "right" }}>{a.marks_obtained !== null && a.marks_obtained !== undefined ? fmt(a.marks_obtained) : ""}</td>
+                        <td style={tdStyle()}>{a.due_date || ""}</td>
+                        <td style={{ ...tdStyle(), borderRight: "1px solid #cccccc" }}></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </>
         )}
         <div style={{ marginTop: 20, paddingTop: 8, borderTop: "1px solid #eee" }}>
