@@ -54,6 +54,13 @@ router.post("/admin/course", requireAdmin, async (req, res) => {
   res.status(201).json({ id: Number(result.lastInsertRowid), course_title, course_id, class_nbr, subject_catalog_nbr, class_section: class_section ?? "1R1", instructor: instructor ?? "" });
 });
 
+router.patch("/admin/courses/:courseId/instructor", requireAdmin, async (req, res) => {
+  const { instructor } = req.body;
+  const db = getDb();
+  await db.execute({ sql: "UPDATE courses SET instructor = ? WHERE id = ?", args: [instructor, parseInt(req.params.courseId, 10)] });
+  res.json({ message: "Instructor updated" });
+});
+
 router.delete("/admin/courses/:courseId", requireAdmin, async (req, res) => {
   const db = getDb();
   const courseId = parseInt(req.params.courseId, 10);
@@ -168,11 +175,11 @@ router.get("/admin/grades/:courseId", requireAdmin, async (req, res) => {
 });
 
 router.post("/admin/grades", requireAdmin, async (req, res) => {
-  const { student_college_id, course_id, letter_grade, credits } = req.body;
+  const { student_college_id, course_id, letter_grade } = req.body;
   const gradePoints: Record<string, number> = { "A+": 10, "A": 10, "A-": 9, "B": 8, "B-": 7, "C": 6, "E": 2, "F": 0 };
   const grade_points = gradePoints[letter_grade] ?? null;
   const db = getDb();
-  await db.execute({ sql: `INSERT INTO student_grades (student_college_id, course_id, letter_grade, credits, grade_points) VALUES (?, ?, ?, ?, ?) ON CONFLICT(student_college_id, course_id) DO UPDATE SET letter_grade=excluded.letter_grade, credits=excluded.credits, grade_points=excluded.grade_points`, args: [student_college_id, course_id, letter_grade, credits, grade_points] });
+  await db.execute({ sql: `INSERT INTO student_grades (student_college_id, course_id, letter_grade, credits, grade_points) VALUES (?, ?, ?, ?, ?) ON CONFLICT(student_college_id, course_id) DO UPDATE SET letter_grade=excluded.letter_grade, grade_points=excluded.grade_points`, args: [student_college_id, course_id, letter_grade, null, grade_points] });
   res.json({ message: "Grade saved" });
 });
 
